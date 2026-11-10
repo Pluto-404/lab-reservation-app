@@ -187,11 +187,11 @@ Dengan struktur tersebut, sistem dapat mengelola data pengguna, laboratorium, da
 ## 👥 Anggota Kelompok & Pembagian Tugas
 
 | No | Nama Mahasiswa | NIM | Username GitHub | Peran & Tanggung Jawab Utama |
-|:--:|:--:|---|:---:|:---:|---|
-| 1 | **Muhammad Dava Syahputra** | [NIM K3524058] | [@Davyrann](https://github.com/Davyrann) | **Backend & Architecture Lead** |
-| 2 | **Fatih Nur Faiq** | [NIM K3524052] | [@Fatih-faiq](https://github.com/Pluto-404) | **Student Experience Lead** |
-| 3 | **Muhammad Raihan Faza** | [NIM K3524060] | [@raihan-23-git](https://github.com/raihan-23-git) | **Core Booking & Calendar Lead** |
-| 4 | **Ghali Shiddiq Fatullah** | [NIM K3524054] | [@ghaliishiddiq12](https://github.com/ghaliishiddiq12/) | **Admin & Management Lead** |
+|:--:|---|:---:|:---:|---|
+| 1 | **Muhammad Dava Syahputra** | NIM K3524058 | [@Davyrann](https://github.com/Davyrann) | **Backend & Architecture Lead** |
+| 2 | **Fatih Nur Faiq** | NIM K3524052 | [@Fatih-faiq](https://github.com/Pluto-404) | **Student Experience Lead** |
+| 3 | **Muhammad Raihan Faza** | NIM K3524060 | [@raihan-23-git](https://github.com/raihan-23-git) | **Core Booking & Calendar Lead** |
+| 4 | **Ghali Shiddiq Fatullah** | NIM K3524054 | [@ghaliishiddiq12](https://github.com/ghaliishiddiq12/) | **Admin & Management Lead** |
 
 
 ## 💻 Panduan Instalasi & Menjalankan Proyek
