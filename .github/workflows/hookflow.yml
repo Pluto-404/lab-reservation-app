@@ -1,0 +1,20 @@
+name: HookFlow Notification
+# File: .github/workflows/hookflow.yml
+# Cocok untuk Collaborator tanpa akses Admin Webhook!
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger HookFlow
+        if: always()
+        run: |
+          curl -s -X POST "https://hookflow.davyran.ai.id/api/v1/webhook/flutter-478f9e" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: ${{ github.event_name }}" \
+            -H "X-HookFlow-Secret: ${{ secrets.HOOKFLOW_SECRET }}" \
+            --data-binary "@$GITHUB_EVENT_PATH"
