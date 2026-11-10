@@ -86,31 +86,31 @@ Rancangan antarmuka LabBook dibuat untuk mempermudah mahasiswa dan admin dalam m
 
 Menampilkan formulir autentikasi agar pengguna dapat masuk ke aplikasi menggunakan akun yang telah terdaftar.
 
-<!-- Screenshot halaman Login -->
+![Halaman Login](screenshots/01-login.png)
 
 ### B. Halaman Beranda
 
 Menampilkan halaman utama aplikasi sebagai pusat navigasi menuju fitur-fitur LabBook.
 
-<!-- Screenshot halaman Beranda -->
+![Halaman Beranda](screenshots/02-beranda.png)
 
 ### C. Halaman Katalog Laboratorium
 
 Menampilkan daftar laboratorium yang tersedia beserta informasi fasilitas dan kapasitasnya.
 
-<!-- Screenshot halaman Katalog Lab -->
+![Katalog Laboratorium](screenshots/03-katalog-lab.png)
 
 ### D. Halaman Detail Laboratorium
 
 Menampilkan informasi lengkap mengenai laboratorium yang dipilih, termasuk fasilitas, kapasitas, dan jam operasional.
 
-<!-- Screenshot halaman Detail Lab -->
+![Detail Laboratorium](screenshots/04-detail-lab.png)
 
 ### E. Halaman Form Reservasi
 
 Menampilkan formulir pengajuan peminjaman laboratorium untuk memilih tanggal, waktu, dan keperluan penggunaan.
 
-<!-- Screenshot halaman Form Reservasi -->
+![Form Reservasi](screenshots/05-form-reservasi.png)
 
 ---
 
