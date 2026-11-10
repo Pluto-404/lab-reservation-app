@@ -9,39 +9,54 @@ Aplikasi mobile berbasis **Flutter** untuk memfasilitasi peminjaman dan reservas
 
 ---
 
-## 📌 Latar Belakang & Permasalahan
+## 🔍 Identifikasi Masalah & Solusi
 
-Laboratorium kampus memiliki tingkat utilisasi tinggi untuk kegiatan praktikum berkala, riset tugas akhir mahasiswa, penelitian dosen, maupun workshop organisasi mahasiswa. Namun, operasional saat ini kerap menemui kendala:
-1. **Jadwal Bentrok & Tumpang Tindih:** Belum adanya visualisasi ketersediaan ruangan secara *real-time* berbasis kalender interaktif.
-2. **Proses Pengajuan Konvensional:** Pengajuan masih mengandalkan formulir fisik atau pesan personal yang rentan terlewat.
-3. **Ketidakterbukaan Informasi Fasilitas:** Mahasiswa kesulitan mengetahui spesifikasi perangkat (PC, proyektor, alat uji), kapasitas lab, dan jam operasional aktif.
+### A. Identifikasi Masalah
+
+Laboratorium kampus memiliki tingkat utilisasi tinggi untuk kegiatan praktikum berkala, riset tugas akhir mahasiswa, penelitian dosen, maupun workshop organisasi mahasiswa. Namun, operasional saat ini kerap menemui kendala, yaitu:
+
+1. **Jadwal Bentrok:** Belum tersedia sistem kalender terpadu yang menampilkan jadwal penggunaan laboratorium secara real-time sehingga berpotensi terjadi pemesanan ganda pada ruangan yang sama.
+2. **Birokrasi Manual:** Proses pengajuan peminjaman masih menggunakan formulir kertas atau pesan personal kepada petugas/laboran sehingga pengajuan berisiko tercecer dan sulit dipantau.
+3. **Kurangnya Transparansi Fasilitas:** Mahasiswa kesulitan mengetahui informasi fasilitas laboratorium, seperti jumlah PC, jenis peralatan, proyektor, AC, kapasitas ruangan, dan jam operasional.
+
+### B. Solusi yang Diusulkan
+
+**LabBook** merupakan aplikasi mobile berbasis Flutter dengan dukungan Firebase (Authentication, Cloud Firestore, dan Cloud Storage) yang dirancang untuk mempermudah proses reservasi dan pengelolaan laboratorium kampus.
+
+Solusi yang ditawarkan meliputi:
+
+- **Kalender Interaktif:** Menampilkan jadwal dan ketersediaan laboratorium secara real-time.
+- **Reservasi Mandiri:** Memungkinkan mahasiswa mengajukan peminjaman laboratorium dengan validasi otomatis untuk mencegah jadwal bentrok.
+- **Sistem Approval:** Menyediakan sistem persetujuan dan penolakan pengajuan reservasi oleh asisten lab/laboran, termasuk informasi alasan penolakan.
 
 **LabBook** hadir sebagai solusi terpadu dengan menyediakan kalender interaktif ala *Google Calendar*, sistem booking mandiri dengan pencegahan bentrok otomatis, serta panel pengelolaan persetujuan (*approval*) untuk asisten laboratorium.
 
 ---
 
-## 🚀 Fitur Utama Aplikasi
+## 🚀 Fitur yang Dikembangkan
 
-Sistem LabBook dirancang dengan **Role-Based Access Control (RBAC)** yang membagi pengguna menjadi dua peran:
+Aplikasi LabBook memiliki dua jenis pengguna, yaitu Mahasiswa (Student) dan Admin/Asisten Laboratorium.
 
-### 🎓 A. Fitur Mahasiswa (Student)
-- [x] **Autentikasi & Registrasi Akun:** Login dan registrasi terintegrasi dengan Firebase Authentication.
-- [x] **Kelengkapan Profil Akademik:** Pengisian data diri mahasiswa (NIM, Nama Lengkap, Kelas, dan Angkatan).
-- [x] **Katalog & Detail Laboratorium:** Menampilkan daftar lab aktif, kapasitas, daftar fasilitas/perangkat, dan foto laboratorium.
-- [x] **Kalender Jadwal Interaktif:** Visualisasi ketersediaan slot waktu lab ala *Google Calendar* secara *real-time*.
-- [x] **Pengajuan Reservasi (Booking):** Memilih tanggal dan rentang jam dengan validasi pencegahan jadwal bentrok secara otomatis.
-- [x] **Manajemen & Riwayat Reservasi:** Memantau status peminjaman (`Pending`, `Approved`, `Rejected`, `Cancelled`).
-- [x] **Pembatalan Mandiri:** Mahasiswa dapat membatalkan reservasi miliknya yang belum berlangsung.
-- [x] **Transparansi Penolakan:** Mengetahui alasan penolakan secara jelas jika pengajuan ditolak oleh laboran.
+### A. Fitur Mahasiswa (Student)
 
-### 🛡️ B. Fitur Admin / Asisten Laboratorium
-- [x] **Dashboard Operasional:** Ringkasan statistik harian (pengajuan menunggu persetujuan, lab aktif, peminjaman hari ini).
-- [x] **Pusat Persetujuan (Approval Center):** Menyetujui atau menolak permohonan reservasi dengan catatan alasan penolakan.
-- [x] **Reservasi Manual (Walk-in Booking):** Menginputkan peminjaman langsung di tempat untuk mahasiswa yang datang ke meja asisten lab.
-- [x] **Manajemen Laboratorium (CRUD Lab):** Menambah, memperbarui fasilitas/kapasitas, dan menonaktifkan status laboratorium.
-- [x] **Blokir Jadwal (Maintenance & Kelas Reguler):** Mengunci slot waktu di kalender untuk jadwal praktikum berkala atau perawatan lab.
-- [x] **Laporan & Riwayat Peminjaman:** Arsip lengkap riwayat peminjaman laboratorium kampus.
+1. **Registrasi & Login:** Pendaftaran dan autentikasi pengguna menggunakan Firebase Authentication.
+2. **Profil Mahasiswa:** Melengkapi identitas mahasiswa berupa NIM, nama lengkap, kelas, dan angkatan.
+3. **Katalog Laboratorium:** Melihat daftar laboratorium beserta fasilitas, kapasitas, dan jam operasional.
+4. **Kalender Ketersediaan:** Melihat jadwal penggunaan laboratorium secara real-time.
+5. **Pengajuan Reservasi:** Mengajukan booking berdasarkan tanggal serta rentang waktu mulai dan selesai.
+6. **Riwayat Booking:** Memantau status reservasi, yaitu Pending, Approved, Rejected, dan Cancelled.
+7. **Pembatalan Booking:** Membatalkan reservasi milik sendiri sebelum jadwal berlangsung.
+8. **Informasi Penolakan:** Melihat alasan apabila pengajuan reservasi ditolak oleh admin.
 
+### B. Fitur Admin / Asisten Laboratorium
+
+1. **Dashboard Admin:** Menampilkan ringkasan penggunaan laboratorium, seperti jumlah booking pending, laboratorium aktif, dan peminjaman hari ini.
+2. **Approval Reservasi:** Menyetujui (Approve) atau menolak (Reject) pengajuan booking mahasiswa.
+3. **Walk-in Booking:** Memasukkan reservasi secara manual untuk mahasiswa yang datang langsung ke meja piket.
+4. **Manajemen Laboratorium:** Menambah, mengubah informasi, dan menonaktifkan data laboratorium.
+5. **Pengaturan Fasilitas:** Mengatur fasilitas, kapasitas meja, dan jam operasional laboratorium.
+6. **Maintenance Schedule:** Memblokir jadwal tertentu untuk praktikum reguler atau pemeliharaan laboratorium.
+7. **Riwayat dan Laporan:** Mengelola seluruh data reservasi serta melihat riwayat penggunaan laboratorium.
 ---
 
 ## 🛠️ Arsitektur Teknologi & Database
@@ -60,6 +75,112 @@ Aplikasi mengelola 3 koleksi data utama:
 1. `users` — Data profil mahasiswa dan akun admin/asisten lab (`uid`, `name`, `nim`, `class_name`, `cohort`, `role`).
 2. `laboratories` — Informasi ruangan lab (`lab_id`, `name`, `building`, `capacity`, `facilities`, `operational_hours`, `is_active`).
 3. `reservations` — Data transaksi peminjaman & blokir jadwal (`reservation_id`, `lab_id`, `user_id`, `start_time`, `end_time`, `status`, `rejection_reason`, `admin_id`).
+
+---
+
+## 🎨 Rancangan Antarmuka Aplikasi
+
+Rancangan antarmuka LabBook dibuat untuk mempermudah mahasiswa dan admin dalam menggunakan sistem reservasi laboratorium.
+
+### A. Halaman Login
+
+Menampilkan formulir autentikasi agar pengguna dapat masuk ke aplikasi menggunakan akun yang telah terdaftar.
+
+<!-- Screenshot halaman Login -->
+
+### B. Halaman Beranda
+
+Menampilkan halaman utama aplikasi sebagai pusat navigasi menuju fitur-fitur LabBook.
+
+<!-- Screenshot halaman Beranda -->
+
+### C. Halaman Katalog Laboratorium
+
+Menampilkan daftar laboratorium yang tersedia beserta informasi fasilitas dan kapasitasnya.
+
+<!-- Screenshot halaman Katalog Lab -->
+
+### D. Halaman Detail Laboratorium
+
+Menampilkan informasi lengkap mengenai laboratorium yang dipilih, termasuk fasilitas, kapasitas, dan jam operasional.
+
+<!-- Screenshot halaman Detail Lab -->
+
+### E. Halaman Form Reservasi
+
+Menampilkan formulir pengajuan peminjaman laboratorium untuk memilih tanggal, waktu, dan keperluan penggunaan.
+
+<!-- Screenshot halaman Form Reservasi -->
+
+---
+
+## 🗄️ Perancangan Struktur Data Cloud Firestore
+
+LabBook menggunakan **Cloud Firestore** sebagai database NoSQL untuk menyimpan data pengguna, informasi laboratorium, dan reservasi.
+
+### A. Collection: `users`
+
+Digunakan untuk menyimpan informasi akun dan identitas pengguna aplikasi.
+
+| Field | Tipe Data | Keterangan |
+|---|---|---|
+| uid | String | ID pengguna dari Firebase Authentication (Primary Key) |
+| email | String | Alamat email pengguna |
+| name | String | Nama lengkap pengguna |
+| nim | String | Nomor Induk Mahasiswa |
+| class_name | String | Kelas mahasiswa, contoh: IF-A |
+| cohort | String | Angkatan mahasiswa, contoh: 2023 |
+| role | String | Hak akses: student atau admin |
+| photo_url | String | URL foto profil pengguna |
+| created_at | Timestamp | Waktu pembuatan akun |
+
+### B. Collection: `laboratories`
+
+Digunakan untuk menyimpan informasi dan data fasilitas laboratorium.
+
+| Field | Tipe Data | Keterangan |
+|---|---|---|
+| lab_id | String | ID laboratorium (Primary Key) |
+| name | String | Nama laboratorium |
+| building | String | Lokasi gedung dan lantai laboratorium |
+| capacity | Integer | Kapasitas kursi atau komputer |
+| facilities | Array of String | Daftar fasilitas laboratorium |
+| operational_hours | String | Jam operasional laboratorium |
+| is_active | Boolean | Status aktif atau tidak aktif |
+| image_url | String | URL gambar laboratorium |
+
+### C. Collection: `reservations`
+
+Digunakan untuk menyimpan seluruh data pengajuan dan aktivitas reservasi laboratorium.
+
+| Field | Tipe Data | Keterangan |
+|---|---|---|
+| reservation_id | String | ID reservasi (Primary Key) |
+| lab_id | String | Referensi ID laboratorium |
+| lab_name | String | Nama laboratorium |
+| user_id | String | Referensi UID pengguna |
+| student_name | String | Nama mahasiswa |
+| student_nim | String | NIM mahasiswa |
+| student_class | String | Kelas mahasiswa |
+| title | String | Judul atau keperluan reservasi |
+| purpose | String | Rincian kegiatan |
+| start_time | Timestamp | Waktu mulai reservasi |
+| end_time | Timestamp | Waktu selesai reservasi |
+| type | String | student_booking, walk_in, atau maintenance_block |
+| status | String | pending, approved, rejected, cancelled, atau completed |
+| rejection_reason | String | Alasan penolakan reservasi |
+| admin_id | String | UID admin yang menyetujui atau menolak reservasi |
+| created_at | Timestamp | Waktu pembuatan data reservasi |
+
+### D. Relasi Antar Koleksi
+
+Meskipun Cloud Firestore merupakan database NoSQL, hubungan antar data dilakukan menggunakan ID sebagai referensi.
+
+- Koleksi `users` menyimpan data mahasiswa dan admin.
+- Koleksi `laboratories` menyimpan informasi laboratorium.
+- Koleksi `reservations` menghubungkan data pengguna dengan laboratorium melalui field `user_id` dan `lab_id`.
+
+Dengan struktur tersebut, sistem dapat mengelola data pengguna, laboratorium, dan reservasi secara terorganisasi.
 
 ---
 
