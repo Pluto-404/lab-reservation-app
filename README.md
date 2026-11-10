@@ -67,15 +67,11 @@ Aplikasi mengelola 3 koleksi data utama:
 
 | No | Foto / Avatar | Nama Mahasiswa | NIM | Username GitHub | Peran & Tanggung Jawab Utama |
 |:--:|:--:|---|:---:|:---:|---|
-| 1 | 👤 | **[Nama Mahasiswa 1]** | [NIM] | [@username1](https://github.com/username1) | **Project Lead & Backend** (Firebase Auth, Firestore, Skema Data) |
-| 2 | 👤 | **[Nama Mahasiswa 2]** | [NIM] | [@username2](https://github.com/username2) | **UI/UX & Frontend** (Katalog Lab, Detail Lab, Profil) |
-| 3 | 👤 | **[Nama Mahasiswa 3]** | [NIM] | [@username3](https://github.com/username3) | **Core Feature Lead** (Kalender Jadwal Interaktif & Form Booking) |
-| 4 | 👤 | **[Nama Mahasiswa 4]** | [NIM] | [@username4](https://github.com/username4) | **Admin Module Lead** (Panel Approval, Walk-in Booking, Blokir Jadwal) |
-| 5 | 👤 | **[Nama Mahasiswa 5]** | [NIM] | [@username5](https://github.com/username5) | **QA & Documentation** (Pengujian Fungsional, Laporan Mingguan) |
+| 1 | 👤 | **[Muhammad Dava Syahputra]** | [NIM K3524058] | [@Davyrann](https://github.com/Davyrann) | **Backend & Architecture Lead** |
+| 2 | 👤 | **[Fatih Nur Faiq]** | [NIM K3524052] | [@Fatih-faiq](https://github.com/Pluto-404) | **Student Experience Lead** |
+| 3 | 👤 | **[Muhammad Raihan Faza]** | [NIM K3524060] | [@raihan-23-git](https://github.com/raihan-23-git) | **Core Booking & Calendar Lead** |
+| 4 | 👤 | **[Nama Mahasiswa 4]** | [NIM K3524054] | [@ghaliishiddiq12](https://github.com/ghaliishiddiq12/) | **Admin & Management Lead** |
 
-*(Silakan sesuaikan data anggota kelompok di atas)*
-
----
 
 ## 💻 Panduan Instalasi & Menjalankan Proyek
 
@@ -114,22 +110,93 @@ flutter run
 
 ## 📅 Roadmap Perkembangan Proyek (4 Minggu)
 
-- [x] **Minggu 1 — Identifikasi Masalah, Perancangan, & Setup Repo**
-  - [x] Identifikasi masalah dan penentuan topik (LabBook).
-  - [x] Perancangan arsitektur, ERD Firestore, dan user flow.
-  - [x] Inisialisasi GitHub repository, penyusunan `README.md`, dan pembagian tugas.
-- [ ] **Minggu 2 — Implementasi Antarmuka & Integrasi Firebase Dasar**
-  - [ ] Implementasi autentikasi & kelengkapan profil mahasiswa.
-  - [ ] Pembuatan katalog lab dan navigasi utama.
-  - [ ] Setup Cloud Firestore dan integrasi data laboratorium.
-- [ ] **Minggu 3 — Penyelesaian Fitur Inti & Pengujian Awal**
-  - [ ] Implementasi kalender jadwal interaktif ala Google Calendar.
-  - [ ] Form reservasi lab dengan logika pencegahan bentrok (*conflict detection*).
-  - [ ] Panel persetujuan (*approval/rejection*) untuk admin/asisten lab.
-- [ ] **Minggu 4 — Finalisasi, Walk-in Booking, Pengujian Akhir & Presentasi**
-  - [ ] Fitur booking walk-in dan blokir jadwal maintenance.
-  - [ ] Pengujian fungsional menyeluruh (*Black-box testing*).
-  - [ ] Penyusunan Laporan Akhir (PDF) dan demonstrasi aplikasi.
+Jadwal kerja proyek LabBook dibagi menjadi 4 minggu dengan pembagian tugas dan target commit GitHub untuk setiap anggota kelompok.
+
+### Minggu 1 – Persiapan dan Perancangan
+
+| Anggota | Tugas Pokok | Target Commit GitHub |
+|---|---|---|
+| Muhammad Dava Syahputra | Setup Firebase (Auth, Firestore), menyusun skema data dan hak akses. | `docs: inisialisasi skema firestore dan konfigurasi backend` |
+| Fatih Nur Faiq | Membuat wireframe UI Mahasiswa (Login, Register, Profil, Katalog Lab). | `docs: wireframe antarmuka mahasiswa dan katalog` |
+| Muhammad Raihan Faza | Inisialisasi proyek Flutter, wireframe kalender dan form booking. | `chore: inisialisasi flutter dan struktur navigasi awal` |
+| Ghali Shiddiq Fatullah | Membuat wireframe UI Admin, Dashboard dan laporan pengumpulan SPADA Minggu 1. | `docs: panduan kontribusi dan mockup admin dashboard` |
+
+### Minggu 2 – Implementasi Fitur Dasar
+
+| Anggota | Tugas Pokok | Target Commit GitHub |
+|---|---|---|
+| Muhammad Dava Syahputra | Implementasi AuthService, UserModel, LabModel, dan FirestoreService. | `feat(auth): implementasi AuthService dan UserModel` |
+| Fatih Nur Faiq | Implementasi halaman Register, Login, Profil, dan Katalog Lab. | `feat(ui): antarmuka login, profil mahasiswa, dan katalog lab` |
+| Muhammad Raihan Faza | Implementasi navigasi BottomBar dan integrasi kalender mingguan. | `feat(calendar): implementasi antarmuka kalender mingguan` |
+| Ghali Shiddiq Fatullah | Implementasi Dashboard Admin dan form Tambah/Edit Lab (CRUD Lab). | `feat(admin): antarmuka kelola lab dan integrasi crud` |
+
+### Minggu 3 – Implementasi Fitur Lanjutan
+
+| Anggota | Tugas Pokok | Target Commit GitHub |
+|---|---|---|
+| Muhammad Dava Syahputra | Query realtime kalender Firestore dan Security Rules. | `feat(backend): query realtime kalender dan security rules` |
+| Fatih Nur Faiq | Membuat halaman Riwayat Booking Mahasiswa, fitur pembatalan, dan dialog alasan penolakan. | `feat(booking): riwayat peminjaman mahasiswa dan pembatalan` |
+| Muhammad Raihan Faza | Membuat form pengajuan booking dan logika validasi jadwal bentrok. | `feat(booking): form booking dan validasi jadwal bentrok` |
+| Ghali Shiddiq Fatullah | Membuat Pusat Persetujuan (Approval Center) untuk menyetujui dan menolak booking. | `feat(admin): sistem approval dan penolakan booking` |
+
+### Minggu 4 – Pengujian dan Finalisasi
+
+| Anggota | Tugas Pokok | Target Commit GitHub |
+|---|---|---|
+| Muhammad Dava Syahputra | Optimasi query Firestore, offline support, dan seeder data demo. | `perf: optimasi query firestore dan penyusunan seeder data` |
+| Fatih Nur Faiq | Polishing UI mahasiswa, dokumentasi screenshot, serta penyusunan Bab 1 dan 2 Laporan Akhir. | `docs: dokumentasi screenshot dan penyusunan bab 1 2` |
+| Muhammad Raihan Faza | Pengujian fungsional (Black-box) dan penyusunan Bab 5 Laporan Akhir. | `test: skenario pengujian kalender dan validasi booking` |
+| Ghali Shiddiq Fatullah | Implementasi fitur Walk-in Booking, blokir maintenance, dan finalisasi slide presentasi serta laporan. | `feat(admin): fitur walk-in booking dan finalisasi laporan` |
+
+---
+
+## 🎥 Rencana Demonstrasi Aplikasi
+
+Demonstrasi dilakukan untuk memperlihatkan cara kerja aplikasi LabBook, mulai dari proses login mahasiswa hingga pengelolaan reservasi oleh admin.
+
+### 1. Persiapan Demonstrasi
+
+Sebelum demonstrasi dimulai, tim menyiapkan:
+- Aplikasi LabBook yang sudah dapat dijalankan.
+- Akun mahasiswa dan akun admin untuk pengujian.
+- Data laboratorium beserta informasi fasilitas dan kapasitas.
+- Data jadwal laboratorium untuk simulasi reservasi.
+- Koneksi internet untuk mengakses Firebase.
+
+### 2. Skenario Demonstrasi
+
+| No. | Skenario | Aktivitas Demonstrasi |
+|---|---|---|
+| 1 | Login Mahasiswa | Menunjukkan proses login dan registrasi menggunakan Firebase Authentication. |
+| 2 | Profil Mahasiswa | Menampilkan informasi identitas mahasiswa. |
+| 3 | Katalog Laboratorium | Menampilkan daftar laboratorium, fasilitas, kapasitas, dan jam operasional. |
+| 4 | Kalender Laboratorium | Menunjukkan jadwal ketersediaan laboratorium. |
+| 5 | Pengajuan Reservasi | Mahasiswa memilih laboratorium, tanggal, waktu, dan mengirim pengajuan booking. |
+| 6 | Validasi Jadwal | Menunjukkan proses pencegahan jadwal reservasi yang bentrok. |
+| 7 | Persetujuan Admin | Admin melihat pengajuan dan melakukan persetujuan atau penolakan reservasi. |
+| 8 | Riwayat Reservasi | Menampilkan status dan riwayat booking mahasiswa. |
+| 9 | Fitur Admin | Menunjukkan pengelolaan data laboratorium, walk-in booking, dan blokir jadwal maintenance. |
+
+### 3. Pembagian Tugas Demonstrasi
+
+| Anggota | Tanggung Jawab |
+|---|---|
+| Muhammad Dava Syahputra | Menjelaskan integrasi Firebase, Authentication, Firestore, dan pengelolaan data backend. |
+| Fatih Nur Faiq | Mendemonstrasikan tampilan dan fitur mahasiswa. |
+| Muhammad Raihan Faza | Mendemonstrasikan kalender, pengajuan booking, dan validasi jadwal. |
+| Ghali Shiddiq Fatullah | Mendemonstrasikan dashboard admin, persetujuan booking, dan pengelolaan laboratorium. |
+
+### 4. Target Hasil Demonstrasi
+
+- Seluruh fitur utama aplikasi dapat diperlihatkan.
+- Proses reservasi mahasiswa dapat berjalan.
+- Admin dapat mengelola dan memproses pengajuan reservasi.
+- Integrasi Firebase dapat ditunjukkan.
+- Tim dapat menjelaskan fungsi dan alur kerja aplikasi LabBook.
+
+### 5. Penutup
+
+Demonstrasi diakhiri dengan penyampaian kesimpulan mengenai fungsi aplikasi LabBook, manfaat sistem reservasi laboratorium, serta hasil pengembangan proyek oleh seluruh anggota kelompok.
 
 ---
 
