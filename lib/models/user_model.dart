@@ -23,34 +23,35 @@ class UserModel {
     required this.createdAt,
   });
 
-  Map<String, dynamic> toMap() {                             
-    return {                                                 
-      'uid': uid,                                            
-      'email': email,                                        
-      'name': name,                                          
-      'nim': nim,                                            
-      'class_name': className,                               
-      'cohort': cohort,                                      
-      'role': role,                                          
-      'photo_url': photoUrl,                                 
-      'created_at': Timestamp.fromDate(createdAt),           
-    };                                                       
-  } 
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': uid,
+      'email': email,
+      'name': name,
+      'nim': nim,
+      'class_name': className,
+      'cohort': cohort,
+      'role': role,
+      'photo_url': photoUrl,
+      'created_at': Timestamp.fromDate(createdAt),
+    };
+  }
 
-  factory UserModel.fromFirestore(DocumentSnapshot doc) {    
-    final data = doc.data() as Map<String, dynamic>? ?? {};  
-                                                              
-    return UserModel(                                        
-      uid: doc.id,                                           
-      email: data['email'] ?? '',                            
-      name: data['name'] ?? '',                              
-      nim: data['nim'] ?? '',                                
-      className: data['class_name'] ?? '',                   
-      cohort: data['cohort'] ?? '',                          
-      role: data['role'] ?? 'student',                       
-      photoUrl: data['photo_url'],                           
+  factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+
+    return UserModel(
+      uid: doc.id,
+      email: data['email'] ?? '',
+      name: data['name'] ?? '',
+      nim: data['nim'] ?? '',
+      className: data['class_name'] ?? '',
+      cohort: data['cohort'] ?? '',
+      role: data['role'] ?? 'student',
+      photoUrl: data['photo_url'],
       createdAt: (data['created_at'] as Timestamp?)?.toDate()
-      ?? DateTime.now(),                                     
+      ?? DateTime.now(),
     );
   }
+  
 }
