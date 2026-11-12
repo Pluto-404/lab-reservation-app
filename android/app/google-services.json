@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "702495520726",
+    "project_id": "bookinglab-3c4cb",
+    "storage_bucket": "bookinglab-3c4cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702495520726:android:74545be5bf1980d59c1677",
+        "android_client_info": {
+          "package_name": "com.example.labbook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "702495520726-vupmekm4qhpg9tr55vk72c7pplk8c861.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbcj31QCdms9oNVt10yqLb3tCFuR-fV58"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "702495520726-vupmekm4qhpg9tr55vk72c7pplk8c861.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
