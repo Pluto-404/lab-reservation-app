@@ -80,37 +80,49 @@ Aplikasi mengelola 3 koleksi data utama:
 
 ## 🎨 Rancangan Antarmuka Aplikasi
 
-Rancangan antarmuka LabBook dibuat untuk mempermudah mahasiswa dan admin dalam menggunakan sistem reservasi laboratorium.
+Antarmuka LabBook menggunakan tampilan sederhana dan responsif agar mahasiswa mudah mengakses informasi laboratorium, mengelola profil, dan mengajukan reservasi. Berikut dokumentasi tampilan aplikasi.
 
 ### A. Halaman Login
 
-Menampilkan formulir autentikasi agar pengguna dapat masuk ke aplikasi menggunakan akun yang telah terdaftar.
+Halaman autentikasi untuk masuk menggunakan email dan password atau akun Google, serta mengakses pendaftaran akun mahasiswa.
 
 ![Halaman Login](screenshots/01-login.png)
 
 ### B. Halaman Beranda
 
-Menampilkan halaman utama aplikasi sebagai pusat navigasi menuju fitur-fitur LabBook.
+Beranda menampilkan informasi utama, ringkasan reservasi, dan akses cepat menuju layanan laboratorium.
 
-![Halaman Beranda](screenshots/02-beranda.png)
+**Beranda utama**
+
+![Beranda Utama](screenshots/02-beranda1.png)
+
+**Informasi lanjutan pada beranda**
+
+![Beranda Lanjutan](screenshots/02-beranda2.png)
 
 ### C. Halaman Katalog Laboratorium
 
-Menampilkan daftar laboratorium yang tersedia beserta informasi fasilitas dan kapasitasnya.
+Menampilkan daftar laboratorium serta fasilitas pencarian untuk membantu mahasiswa memilih laboratorium yang dibutuhkan.
 
 ![Katalog Laboratorium](screenshots/03-katalog-lab.png)
 
-### D. Halaman Detail Laboratorium
+### D. Halaman Profil Mahasiswa
 
-Menampilkan informasi lengkap mengenai laboratorium yang dipilih, termasuk fasilitas, kapasitas, dan jam operasional.
+Menampilkan nama, email, NIM, kelas, dan angkatan mahasiswa, disertai opsi mengedit profil dan keluar dari akun.
 
-![Detail Laboratorium](screenshots/04-detail-lab.png)
+![Profil Mahasiswa](screenshots/04-profil.png)
 
-### E. Halaman Form Reservasi
+### E. Halaman Detail Laboratorium
 
-Menampilkan formulir pengajuan peminjaman laboratorium untuk memilih tanggal, waktu, dan keperluan penggunaan.
+Menampilkan informasi laboratorium yang dipilih, termasuk lokasi, kapasitas, fasilitas, dan jam operasional.
 
-![Form Reservasi](screenshots/05-form-reservasi.png)
+![Detail Laboratorium](screenshots/05-detail-lab.png)
+
+### F. Halaman Form Reservasi
+
+Menampilkan formulir pengajuan reservasi untuk mengisi tanggal, rentang waktu, dan keperluan penggunaan. Setiap pengajuan memerlukan persetujuan admin atau asisten laboratorium.
+
+![Form Reservasi](screenshots/06-form-reservasi.png)
 
 ---
 

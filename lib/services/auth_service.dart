@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 import '../models/user_model.dart';
 
 class AuthService {
@@ -22,7 +24,8 @@ class AuthService {
   }) async {
     try {
       // Buat user di Firebase Authentication
-      final UserCredential credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      final UserCredential credential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       final User? user = credential.user;
       if (user == null) return null;
@@ -50,7 +53,10 @@ class AuthService {
     required String password,
   }) async {
     try {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
     } catch (e) {
       rethrow;
     }
@@ -58,23 +64,29 @@ class AuthService {
 
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        return null;
+      late final UserCredential userCredential;
+
+      if (kIsWeb) {
+        // Flutter Web menggunakan popup Firebase Authentication.
+        final provider = GoogleAuthProvider();
+        userCredential = await _auth.signInWithPopup(provider);
+      } else {
+        // Android tetap menggunakan plugin Google Sign-In.
+        final googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) return null;
+
+        final googleAuth = await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCredential = await _auth.signInWithCredential(credential);
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      final User? user = userCredential.user;
-
+      final user = userCredential.user;
       if (user != null) {
-        final DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
-
+        final userRef = _firestore.collection('users').doc(user.uid);
+        final doc = await userRef.get();
         if (!doc.exists) {
           final newUser = UserModel(
             uid: user.uid,
@@ -87,12 +99,13 @@ class AuthService {
             photoUrl: user.photoURL,
             createdAt: DateTime.now(),
           );
-
-          await _firestore.collection('users').doc(user.uid).set(newUser.toMap());
+          await userRef.set(newUser.toMap());
         }
       }
       return userCredential;
-    } catch (e) {
+    } catch (error, stackTrace) {
+      debugPrint('Google Sign-In gagal: $error');
+      debugPrint(stackTrace.toString());
       rethrow;
     }
   }
@@ -116,7 +129,10 @@ class AuthService {
     final User? user = _auth.currentUser;
     if (user == null) return null;
 
-    final DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
+    final DocumentSnapshot doc = await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .get();
     if (doc.exists) {
       return UserModel.fromFirestore(doc);
     }
@@ -125,6 +141,8 @@ class AuthService {
 
   Future<void> signOut() async {
     await _auth.signOut();
-    await _googleSignIn.signOut();
+    if (!kIsWeb) {
+      await _googleSignIn.signOut();
+    }
   }
 }
