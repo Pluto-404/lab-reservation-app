@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../app_theme.dart';
+import '../routes/app_routes.dart';
 import '../services/auth_service.dart';
 
 String authMessage(Object error) {
@@ -93,8 +95,8 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Center(
-                    child: Image.asset(
-                      'assets/images/labbook_logo.png',
+                    child: SvgPicture.asset(
+                      'assets/images/labbook-logo.svg',
                       width: compact ? 170 : 208,
                       height: logoHeight,
                       fit: BoxFit.contain,
@@ -189,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       const Text('Belum punya akun?', style: TextStyle(fontSize: 12, color: AppTheme.muted)),
                       TextButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const RegisterPage())),
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.register),
                         child: const Text('Daftar'),
                       ),
                     ],

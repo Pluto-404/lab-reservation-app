@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../app_theme.dart';
 import '../../models/laboratory_model.dart';
+import '../../routes/app_routes.dart';
 import '../../services/firestore_service.dart';
-import 'laboratory_detail_page.dart';
 import 'widgets/info_state.dart';
 
 class LaboratoryCatalog extends StatefulWidget {
@@ -111,11 +111,10 @@ class _LabCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => Navigator.push(
+          onTap: () => Navigator.pushNamed(
             context,
-            MaterialPageRoute<void>(
-              builder: (_) => LaboratoryDetail(lab: lab),
-            ),
+            AppRoutes.laboratoryDetail,
+            arguments: lab,
           ),
           child: Padding(
             padding: const EdgeInsets.all(14),

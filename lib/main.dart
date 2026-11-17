@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'firebase_options.dart';
 import 'models/user_model.dart';
+import 'routes/app_router.dart';
+import 'routes/app_routes.dart';
 import 'screens/auth_pages.dart';
 import 'screens/student/student_home.dart';
 import 'services/auth_service.dart';
@@ -23,7 +25,10 @@ class LabBookApp extends StatelessWidget {
     title: 'LabBook',
     debugShowCheckedModeBanner: false,
     theme: AppTheme.light,
-    home: const AuthGate(),
+    navigatorKey: AppRouter.navigatorKey,
+    initialRoute: AppRoutes.splash,
+    onGenerateRoute: AppRouter.onGenerateRoute,
+    onUnknownRoute: AppRouter.onUnknownRoute,
   );
 }
 
