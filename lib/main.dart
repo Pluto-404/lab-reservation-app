@@ -6,7 +6,7 @@ import 'app_theme.dart';
 import 'firebase_options.dart';
 import 'models/user_model.dart';
 import 'screens/auth_pages.dart';
-import 'screens/student_pages.dart';
+import 'screens/student/student_home.dart';
 import 'services/auth_service.dart';
 
 Future<void> main() async {
