@@ -39,41 +39,81 @@ class AuthGate extends StatelessWidget {
         if (authSnapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        if (authSnapshot.data == null) return const LoginPage();
-        return FutureBuilder<UserModel?>(
-          key: ValueKey(authSnapshot.data!.uid),
-          future: () async {
-            final first = await auth.getCurrentUserProfile();
-            if (first != null) return first;
-            await Future<void>.delayed(const Duration(milliseconds: 650));
-            return auth.getCurrentUserProfile();
-          }(),
+        final user = authSnapshot.data;
+        if (user == null) return const LoginPage();
+        return StreamBuilder<UserModel?>(
+          key: ValueKey(user.uid),
+          stream: auth.userProfileStream(user.uid),
           builder: (context, profileSnapshot) {
-            if (profileSnapshot.connectionState != ConnectionState.done) {
-              return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            if (profileSnapshot.connectionState == ConnectionState.waiting &&
+                !profileSnapshot.hasData) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
             }
             if (profileSnapshot.hasError) {
-              return Scaffold(body: Center(child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Text('Gagal memuat profil. Periksa koneksi atau izin Firestore.'),
-                  const SizedBox(height: 16),
-                  OutlinedButton(onPressed: () => auth.signOut(), child: const Text('Keluar')),
-                ]),
-              )));
+              return Scaffold(
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Gagal memuat profil. Periksa koneksi atau izin Firestore.',
+                        ),
+                        const SizedBox(height: 16),
+                        OutlinedButton(
+                          onPressed: () => auth.signOut(),
+                          child: const Text('Keluar'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
             }
             final profile = profileSnapshot.data;
             if (profile == null) {
-              return const Scaffold(body: Center(child: Text('Profil akun belum tersedia. Hubungi pengelola LabBook.')));
+              return Scaffold(
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 16),
+                        const Text('Menyiapkan profil akun LabBook...'),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: () => auth.signOut(),
+                          child: const Text('Batal & Keluar'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
             }
             if (profile.role == 'admin') {
               return Scaffold(
                 appBar: AppBar(title: const Text('LabBook Admin')),
-                body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Text('Dashboard admin akan dikembangkan oleh tim admin.'),
-                  const SizedBox(height: 12),
-                  OutlinedButton(onPressed: auth.signOut, child: const Text('Keluar')),
-                ])),
+                body: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Dashboard admin akan dikembangkan oleh tim admin.',
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: auth.signOut,
+                        child: const Text('Keluar'),
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
             return StudentHome(key: ValueKey(profile.uid), profile: profile);
