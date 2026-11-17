@@ -114,14 +114,33 @@ class AuthService {
     required String nim,
     required String className,
     required String cohort,
+    String? name,
   }) async {
     final User? user = _auth.currentUser;
     if (user == null) return;
 
-    await _firestore.collection('users').doc(user.uid).update({
+    final Map<String, dynamic> data = {
       'nim': nim,
       'class_name': className,
       'cohort': cohort,
+    };
+    if (name != null && name.trim().isNotEmpty) {
+      data['name'] = name.trim();
+    }
+
+    await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .set(data, SetOptions(merge: true));
+  }
+
+  /// Stream profil pengguna secara real-time
+  Stream<UserModel?> userProfileStream(String uid) {
+    return _firestore.collection('users').doc(uid).snapshots().map((doc) {
+      if (doc.exists) {
+        return UserModel.fromFirestore(doc);
+      }
+      return null;
     });
   }
 
