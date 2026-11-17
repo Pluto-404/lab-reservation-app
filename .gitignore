@@ -76,3 +76,5 @@ coverage/
 *.key
 
 AGENTS.md
+# Widget Preview related
+.widget_preview/

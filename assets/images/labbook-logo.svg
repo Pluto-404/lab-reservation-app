@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="112 -11 401 341" role="img" aria-label="LabBook">
+<defs>
+<linearGradient id="gl" gradientUnits="userSpaceOnUse" x1="156" y1="15" x2="226" y2="329"><stop offset="0" stop-color="#0989c2"/><stop offset="1" stop-color="#055d95"/></linearGradient>
+<linearGradient id="gb" gradientUnits="userSpaceOnUse" x1="225" y1="0" x2="491" y2="0"><stop offset="0" stop-color="#0193db"/><stop offset="1" stop-color="#01a3e1"/></linearGradient>
+</defs>
+<path d="M132.5,41 A30,30 0 0 1 192.5,41 V222 A34,34 0 0 0 226.5,256 H321 A27,27 0 0 1 321,310 H202.5 A70,70 0 0 1 132.5,240 Z" fill="url(#gl)"/>
+<path d="M247.5,41 H263.5 V50 A25,25 0 0 0 313.5,50 V41 H367.5 V50 A25,25 0 0 0 417.5,50 V41 C467,41 493,70 493,125 C493,150 485,168 471,180 C485,192 493,210 493,234 A76,76 0 0 1 417,310 H360.7 A48,48 0 0 0 366.3,267 H415 A39,39 0 0 0 454,228 C454,208 448,197 437,190 A10,10 0 0 1 437,170 C448,160 454,150 454,132 A36,36 0 0 0 418,96 H247.5 A27.5,27.5 0 0 1 247.5,41 Z" fill="url(#gb)"/>
+<rect x="268" y="128" width="34.5" height="34.5" rx="9" fill="#4fc1e9"/>
+<rect x="319" y="128" width="34.5" height="34.5" rx="9" fill="#4fc1e9"/>
+<rect x="370" y="128" width="34.5" height="34.5" rx="9" fill="#4fc1e9"/>
+<rect x="268" y="180" width="34.5" height="34.5" rx="9" fill="#4fc1e9"/>
+<rect x="319" y="180" width="34.5" height="34.5" rx="9" fill="#4fc1e9"/>
+<rect x="370" y="180" width="34.5" height="34.5" rx="9" fill="#4fc1e9"/>
+<rect x="273.5" y="9" width="30" height="56" rx="15.0" fill="url(#gb)"/>
+<rect x="377.5" y="9" width="30" height="56" rx="15.0" fill="url(#gb)"/>
+</svg>

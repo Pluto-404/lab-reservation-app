@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../app_theme.dart';
 import '../../models/user_model.dart';
@@ -35,12 +36,23 @@ class _StudentHomeState extends State<StudentHome> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'LabBook',
-            style: TextStyle(
-              color: AppTheme.deep,
-              fontWeight: FontWeight.w800,
-            ),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                'assets/images/labbook-logo.svg',
+                width: 26,
+                height: 26,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'LabBook',
+                style: TextStyle(
+                  color: AppTheme.deep,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
           actions: [
             Padding(
