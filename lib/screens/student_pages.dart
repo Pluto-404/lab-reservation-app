@@ -19,6 +19,16 @@ class _StudentHomeState extends State<StudentHome> {
   late UserModel profile = widget.profile;
 
   @override
+  void didUpdateWidget(covariant StudentHome oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.profile != widget.profile) {
+      setState(() {
+        profile = widget.profile;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: const Text('LabBook', style: TextStyle(color: AppTheme.deep, fontWeight: FontWeight.w800)),
@@ -198,7 +208,73 @@ class LaboratoryDetail extends StatelessWidget {
       if (lab.facilities.isEmpty) const Text('Fasilitas belum didata.', style: TextStyle(color: AppTheme.muted)),
       for (final item in lab.facilities) Padding(padding: const EdgeInsets.only(bottom: 9), child: Row(children: [const Icon(Icons.check_circle_outline, size: 18, color: AppTheme.success), const SizedBox(width: 9), Expanded(child: Text(item))])),
       const SizedBox(height: 24),
-      Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: const Color(0xFFEAF7FC), borderRadius: BorderRadius.circular(13)), child: const Text('Reservasi memerlukan persetujuan asisten laboratorium. Fitur pengajuan booking dan kalender dikerjakan oleh tim booking.', style: TextStyle(color: AppTheme.deep))),
+      Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAF7FC),
+          borderRadius: BorderRadius.circular(13),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.info_outline, color: AppTheme.deep, size: 20),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Reservasi memerlukan persetujuan asisten lab.',
+                style: TextStyle(color: AppTheme.deep, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+      ElevatedButton.icon(
+        onPressed: () {
+          showModalBottomSheet<void>(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (ctx) => SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.event_available_outlined,
+                      size: 48,
+                      color: AppTheme.deep,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Reservasi ${lab.name}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Formulir jadwal dan kalender interaktif sedang dihubungkan oleh tim booking (Minggu 3).',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppTheme.muted, fontSize: 13),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Tutup'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.calendar_today_outlined),
+        label: const Text('Ajukan Reservasi'),
+      ),
     ]))),
   );
 }
@@ -226,6 +302,7 @@ class StudentProfile extends StatefulWidget {
 }
 
 class _StudentProfileState extends State<StudentProfile> {
+  late final name = TextEditingController(text: widget.profile.name);
   late final nim = TextEditingController(text: widget.profile.nim);
   late final className = TextEditingController(text: widget.profile.className);
   late final cohort = TextEditingController(text: widget.profile.cohort);
@@ -234,13 +311,24 @@ class _StudentProfileState extends State<StudentProfile> {
   bool saving = false;
 
   @override
-  void dispose() { nim.dispose(); className.dispose(); cohort.dispose(); super.dispose(); }
+  void dispose() {
+    name.dispose();
+    nim.dispose();
+    className.dispose();
+    cohort.dispose();
+    super.dispose();
+  }
 
   Future<void> save() async {
     if (!form.currentState!.validate() || saving) return;
     setState(() => saving = true);
     try {
-      await AuthService().updateAcademicProfile(nim: nim.text.trim(), className: className.text.trim(), cohort: cohort.text.trim());
+      await AuthService().updateAcademicProfile(
+        name: name.text.trim(),
+        nim: nim.text.trim(),
+        className: className.text.trim(),
+        cohort: cohort.text.trim(),
+      );
       final updated = await AuthService().getCurrentUserProfile();
       if (updated != null) widget.onUpdated(updated);
       if (mounted) {
@@ -288,7 +376,12 @@ class _StudentProfileState extends State<StudentProfile> {
               CircleAvatar(
                 radius: compact ? 25 : 31,
                 backgroundColor: Colors.white,
-                child: Icon(Icons.person_outline_rounded, color: AppTheme.deep, size: compact ? 29 : 34),
+                backgroundImage: widget.profile.photoUrl != null && widget.profile.photoUrl!.isNotEmpty
+                    ? NetworkImage(widget.profile.photoUrl!)
+                    : null,
+                child: widget.profile.photoUrl == null || widget.profile.photoUrl!.isEmpty
+                    ? Icon(Icons.person_outline_rounded, color: AppTheme.deep, size: compact ? 29 : 34)
+                    : null,
               ),
               const SizedBox(width: 15),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -311,11 +404,23 @@ class _StudentProfileState extends State<StudentProfile> {
               style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(compact ? 44 : 50)),
             ),
           ] else Form(key: form, child: Column(children: [
+            editor('Nama lengkap', name),
             editor('NIM', nim),
             editor('Kelas', className),
             editor('Angkatan', cohort, year: true),
             ElevatedButton(onPressed: saving ? null : save, child: Text(saving ? 'Menyimpan...' : 'Simpan perubahan')),
-            TextButton(onPressed: saving ? null : () => setState(() => editing = false), child: const Text('Batal')),
+            TextButton(
+              onPressed: saving ? null : () {
+                setState(() {
+                  name.text = widget.profile.name;
+                  nim.text = widget.profile.nim;
+                  className.text = widget.profile.className;
+                  cohort.text = widget.profile.cohort;
+                  editing = false;
+                });
+              },
+              child: const Text('Batal'),
+            ),
           ])),
           SizedBox(height: compact ? 10 : 25),
           TextButton.icon(
