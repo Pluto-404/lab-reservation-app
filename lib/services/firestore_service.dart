@@ -127,6 +127,7 @@ class FirestoreService {
       studentClass: reservation.studentClass,
       title: reservation.title,
       purpose: reservation.purpose,
+      participants: reservation.participants,
       startTime: reservation.startTime,
       endTime: reservation.endTime,
       type: reservation.type,

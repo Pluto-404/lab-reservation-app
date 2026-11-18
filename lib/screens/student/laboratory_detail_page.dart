@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app_theme.dart';
 import '../../models/laboratory_model.dart';
+import '../../routes/app_routes.dart';
 
 class LaboratoryDetail extends StatelessWidget {
   const LaboratoryDetail({super.key, required this.lab});
@@ -129,55 +130,13 @@ class LaboratoryDetail extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    showModalBottomSheet<void>(
-                      context: context,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (ctx) => SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.event_available_outlined,
-                                size: 48,
-                                color: AppTheme.deep,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Reservasi ${lab.name}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Formulir jadwal dan kalender interaktif sedang dihubungkan oleh tim booking (Minggu 3).',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: AppTheme.muted,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Tutup'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.studentSchedule,
+                    arguments: lab,
+                  ),
                   icon: const Icon(Icons.calendar_today_outlined),
-                  label: const Text('Ajukan Reservasi'),
+                  label: const Text('Cek Jadwal & Ajukan'),
                 ),
               ],
             ),

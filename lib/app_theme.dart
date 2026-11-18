@@ -9,6 +9,14 @@ class AppTheme {
   static const outline = Color(0xFFE2E8F0);
   static const success = Color(0xFF22A866);
 
+  // Warna tambahan untuk status & kalender booking (selaras palet LabBook).
+  static const soft = Color(0xFFEAF7FC);
+  static const successSoft = Color(0xFFE6F5EE);
+  static const warning = Color(0xFFA66A00);
+  static const warningSoft = Color(0xFFFFF4DB);
+  static const danger = Color(0xFFC0392B);
+  static const dangerSoft = Color(0xFFFDECEA);
+
   static ThemeData get light {
     final scheme = ColorScheme.fromSeed(seedColor: primary).copyWith(
       primary: primary,

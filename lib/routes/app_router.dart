@@ -5,7 +5,9 @@ import '../models/laboratory_model.dart';
 import '../models/user_model.dart';
 import '../screens/auth_pages.dart';
 import '../screens/splash_screen.dart';
+import '../screens/student/booking/booking_form_page.dart';
 import '../screens/student/laboratory_detail_page.dart';
+import '../screens/student/schedule/student_schedule_page.dart';
 import '../screens/student/student_home.dart';
 import 'app_routes.dart';
 
@@ -66,6 +68,30 @@ class AppRouter {
         }
         return MaterialPageRoute(
           builder: (_) => LaboratoryDetail(lab: lab),
+          settings: settings,
+        );
+
+      case AppRoutes.studentSchedule:
+        final lab = settings.arguments is LaboratoryModel
+            ? settings.arguments as LaboratoryModel
+            : null;
+        return MaterialPageRoute(
+          builder: (_) => StudentSchedulePage(initialLab: lab, showAppBar: true),
+          settings: settings,
+        );
+
+      case AppRoutes.studentBooking:
+        final args = settings.arguments is BookingFormArgs
+            ? settings.arguments as BookingFormArgs
+            : null;
+        if (args == null) {
+          return _errorRoute(
+            'Data laboratorium dan profil (BookingFormArgs) diperlukan untuk membuka form booking.',
+            settings,
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => BookingFormPage(args: args),
           settings: settings,
         );
 

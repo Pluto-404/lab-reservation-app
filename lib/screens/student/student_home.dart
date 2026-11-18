@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../app_theme.dart';
 import '../../models/user_model.dart';
 import 'laboratory_catalog_page.dart';
+import 'schedule/student_schedule_page.dart';
 import 'student_dashboard.dart';
 import 'student_profile_page.dart';
 
@@ -19,8 +20,12 @@ class _StudentHomeState extends State<StudentHome> {
   late int selected = widget.profile.nim.isEmpty ||
           widget.profile.className.isEmpty ||
           widget.profile.cohort.isEmpty
-      ? 2
+      ? _profileTab
       : 0;
+  bool _scheduleOpened = false;
+
+  static const int _scheduleTab = 2;
+  static const int _profileTab = 3;
   late UserModel profile = widget.profile;
 
   @override
@@ -59,7 +64,7 @@ class _StudentHomeState extends State<StudentHome> {
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
                 tooltip: 'Profil',
-                onPressed: () => setState(() => selected = 2),
+                onPressed: () => setState(() => selected = _profileTab),
                 icon: const Icon(Icons.account_circle_outlined),
               ),
             ),
@@ -75,6 +80,15 @@ class _StudentHomeState extends State<StudentHome> {
                 openCatalog: () => setState(() => selected = 1),
               ),
               const LaboratoryCatalog(),
+              // Dibuat saat tab Kalender pertama kali dibuka (hemat query).
+              if (_scheduleOpened || selected == _scheduleTab)
+                StudentSchedulePage(
+                  profile: profile,
+                  onCompleteProfile: () =>
+                      setState(() => selected = _profileTab),
+                )
+              else
+                const SizedBox.shrink(),
               StudentProfile(
                 profile: profile,
                 onUpdated: (updated) => setState(() => profile = updated),
@@ -84,7 +98,10 @@ class _StudentHomeState extends State<StudentHome> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: selected,
-          onDestinationSelected: (i) => setState(() => selected = i),
+          onDestinationSelected: (i) => setState(() {
+            selected = i;
+            if (i == _scheduleTab) _scheduleOpened = true;
+          }),
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),
@@ -95,6 +112,11 @@ class _StudentHomeState extends State<StudentHome> {
               icon: Icon(Icons.apartment_outlined),
               selectedIcon: Icon(Icons.apartment),
               label: 'Laboratorium',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_month_outlined),
+              selectedIcon: Icon(Icons.calendar_month),
+              label: 'Kalender',
             ),
             NavigationDestination(
               icon: Icon(Icons.person_outline),

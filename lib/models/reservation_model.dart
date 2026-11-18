@@ -10,6 +10,7 @@ class ReservationModel {
   final String studentClass;
   final String title;
   final String purpose;
+  final int participants; // jumlah peserta (0 = belum diisi / data lama)
   final DateTime startTime;
   final DateTime endTime;
   final String type; // 'student_booking' | 'walk_in' | 'maintenance_block'
@@ -28,6 +29,7 @@ class ReservationModel {
     required this.studentClass,
     required this.title,
     required this.purpose,
+    this.participants = 0,
     required this.startTime,
     required this.endTime,
     this.type = 'student_booking',
@@ -48,6 +50,7 @@ class ReservationModel {
       'student_class': studentClass,
       'title': title,
       'purpose': purpose,
+      'participants': participants,
       'start_time': Timestamp.fromDate(startTime),
       'end_time': Timestamp.fromDate(endTime),
       'type': type,
@@ -70,6 +73,7 @@ class ReservationModel {
       studentClass: data['student_class'] ?? '',
       title: data['title'] ?? '',
       purpose: data['purpose'] ?? '',
+      participants: (data['participants'] as num?)?.toInt() ?? 0,
       startTime: (data['start_time'] as Timestamp?)?.toDate() ?? DateTime.now(),
       endTime: (data['end_time'] as Timestamp?)?.toDate() ?? DateTime.now(),
       type: data['type'] ?? 'student_booking',
