@@ -80,7 +80,7 @@ class AppRouter {
             settings,
           );
         }
-        return MaterialPageRoute(
+        return MaterialPageRoute<DateTime>(
           builder: (_) => BookingFormPage(args: args),
           settings: settings,
         );

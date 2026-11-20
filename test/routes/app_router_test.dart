@@ -6,6 +6,7 @@ import 'package:labbook/models/user_model.dart';
 import 'package:labbook/routes/app_router.dart';
 import 'package:labbook/routes/app_routes.dart';
 import 'package:labbook/screens/auth_pages.dart';
+import 'package:labbook/screens/student/booking/booking_form_page.dart';
 import 'package:labbook/screens/student/laboratory_detail_page.dart';
 import 'package:labbook/screens/student/student_home.dart';
 
@@ -140,6 +141,28 @@ void main() {
             final widget = (route as MaterialPageRoute).builder(context);
             expect(widget, isNot(isA<LaboratoryDetail>()));
             expect(widget, isA<Scaffold>());
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+    });
+
+    testWidgets('Generates BookingFormPage route typed DateTime for studentBooking', (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            final route = AppRouter.onGenerateRoute(
+              RouteSettings(
+                name: AppRoutes.studentBooking,
+                arguments: BookingFormArgs(lab: dummyLab, profile: dummyUser),
+              ),
+            );
+            // Navigator.pushNamed<DateTime> casts the route; a dynamic route
+            // throws "MaterialPageRoute<dynamic> is not a subtype of
+            // MaterialPageRoute<DateTime>" at runtime.
+            expect(route, isA<MaterialPageRoute<DateTime>>());
+            final widget = (route as MaterialPageRoute<DateTime>).builder(context);
+            expect(widget, isA<BookingFormPage>());
             return const SizedBox.shrink();
           },
         ),
