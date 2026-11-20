@@ -1,7 +1,6 @@
 abstract class AppRoutes {
   // Core & Auth
-  static const String splash = '/';
-  static const String authGate = '/auth-gate';
+  static const String authGate = '/';
   static const String login = '/login';
   static const String register = '/register';
 

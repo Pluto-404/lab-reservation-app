@@ -16,7 +16,6 @@ dependencies:
   firebase_storage: ^14.0.1
   google_sign_in: ^6.2.2
   flutter_svg: ^2.4.0
-  video_player: ^2.14.1
 
 dev_dependencies:
   flutter_test:
@@ -31,7 +30,6 @@ flutter:
     - assets/images/google_logo.png
     - assets/images/labbook-logo.svg
     - assets/images/labbook-logo-text.svg
-    - assets/images/splash.mp4
 
 flutter_icons:
   android: true

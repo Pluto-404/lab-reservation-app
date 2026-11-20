@@ -4,7 +4,6 @@ import '../main.dart';
 import '../models/laboratory_model.dart';
 import '../models/user_model.dart';
 import '../screens/auth_pages.dart';
-import '../screens/splash_screen.dart';
 import '../screens/student/booking/booking_form_page.dart';
 import '../screens/student/laboratory_detail_page.dart';
 import '../screens/student/schedule/student_schedule_page.dart';
@@ -17,20 +16,11 @@ class AppRouter {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case AppRoutes.splash:
-        return MaterialPageRoute(
-          builder: (_) => const SplashScreen(),
-          settings: settings,
-        );
-
       case AppRoutes.authGate:
-        return PageRouteBuilder(
+      case '/auth-gate':
+        return MaterialPageRoute(
+          builder: (_) => const AuthGate(),
           settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const AuthGate(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 350),
         );
 
       case AppRoutes.login:

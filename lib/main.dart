@@ -26,7 +26,7 @@ class LabBookApp extends StatelessWidget {
     debugShowCheckedModeBanner: false,
     theme: AppTheme.light,
     navigatorKey: AppRouter.navigatorKey,
-    initialRoute: AppRoutes.splash,
+    initialRoute: AppRoutes.authGate,
     onGenerateRoute: AppRouter.onGenerateRoute,
     onUnknownRoute: AppRouter.onUnknownRoute,
   );

@@ -6,7 +6,6 @@ import 'package:labbook/models/user_model.dart';
 import 'package:labbook/routes/app_router.dart';
 import 'package:labbook/routes/app_routes.dart';
 import 'package:labbook/screens/auth_pages.dart';
-import 'package:labbook/screens/splash_screen.dart';
 import 'package:labbook/screens/student/laboratory_detail_page.dart';
 import 'package:labbook/screens/student/student_home.dart';
 
@@ -33,22 +32,6 @@ void main() {
   );
 
   group('AppRouter Route Generation Tests', () {
-    testWidgets('Generates SplashScreen for AppRoutes.splash', (tester) async {
-      await tester.pumpWidget(
-        Builder(
-          builder: (context) {
-            final route = AppRouter.onGenerateRoute(
-              const RouteSettings(name: AppRoutes.splash),
-            );
-            expect(route, isA<MaterialPageRoute>());
-            final widget = (route as MaterialPageRoute).builder(context);
-            expect(widget, isA<SplashScreen>());
-            return const SizedBox.shrink();
-          },
-        ),
-      );
-    });
-
     testWidgets('Generates AuthGate for AppRoutes.authGate', (tester) async {
       await tester.pumpWidget(
         Builder(
@@ -56,13 +39,8 @@ void main() {
             final route = AppRouter.onGenerateRoute(
               const RouteSettings(name: AppRoutes.authGate),
             );
-            expect(route, isA<PageRouteBuilder>());
-            final pageRoute = route as PageRouteBuilder;
-            final widget = pageRoute.pageBuilder(
-              context,
-              const AlwaysStoppedAnimation(1.0),
-              const AlwaysStoppedAnimation(1.0),
-            );
+            expect(route, isA<MaterialPageRoute>());
+            final widget = (route as MaterialPageRoute).builder(context);
             expect(widget, isA<AuthGate>());
             return const SizedBox.shrink();
           },
