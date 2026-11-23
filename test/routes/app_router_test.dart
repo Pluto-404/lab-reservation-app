@@ -9,6 +9,10 @@ import 'package:labbook/screens/auth_pages.dart';
 import 'package:labbook/screens/student/booking/booking_form_page.dart';
 import 'package:labbook/screens/student/laboratory_detail_page.dart';
 import 'package:labbook/screens/student/student_home.dart';
+import 'package:labbook/screens/admin/admin_dashboard.dart';
+import 'package:labbook/screens/admin/booking_approval_page.dart';
+import 'package:labbook/screens/admin/laboratory_management_page.dart';
+import 'package:labbook/screens/admin/walk_in_page.dart';
 
 void main() {
   final dummyUser = UserModel(
@@ -169,7 +173,7 @@ void main() {
       );
     });
 
-    testWidgets('Generates AdminHome placeholder for AppRoutes.adminHome', (tester) async {
+    testWidgets('Generates AdminDashboard for AppRoutes.adminHome', (tester) async {
       await tester.pumpWidget(
         Builder(
           builder: (context) {
@@ -178,7 +182,55 @@ void main() {
             );
             expect(route, isA<MaterialPageRoute>());
             final widget = (route as MaterialPageRoute).builder(context);
-            expect(widget, isA<Scaffold>());
+            expect(widget, isA<AdminDashboard>());
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+    });
+
+    testWidgets('Generates BookingApprovalPage for AppRoutes.adminApprovals', (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            final route = AppRouter.onGenerateRoute(
+              const RouteSettings(name: AppRoutes.adminApprovals),
+            );
+            expect(route, isA<MaterialPageRoute>());
+            final widget = (route as MaterialPageRoute).builder(context);
+            expect(widget, isA<BookingApprovalPage>());
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+    });
+
+    testWidgets('Generates LaboratoryManagementPage for AppRoutes.adminManageLabs', (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            final route = AppRouter.onGenerateRoute(
+              const RouteSettings(name: AppRoutes.adminManageLabs),
+            );
+            expect(route, isA<MaterialPageRoute>());
+            final widget = (route as MaterialPageRoute).builder(context);
+            expect(widget, isA<LaboratoryManagementPage>());
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+    });
+
+    testWidgets('Generates WalkInPage for AppRoutes.adminWalkIn', (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            final route = AppRouter.onGenerateRoute(
+              const RouteSettings(name: AppRoutes.adminWalkIn),
+            );
+            expect(route, isA<MaterialPageRoute>());
+            final widget = (route as MaterialPageRoute).builder(context);
+            expect(widget, isA<WalkInPage>());
             return const SizedBox.shrink();
           },
         ),

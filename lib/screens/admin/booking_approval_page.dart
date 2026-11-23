@@ -1,17 +1,23 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../app_theme.dart';
 import '../../models/reservation_model.dart';
 import '../../services/firestore_service.dart';
+import '../../widgets/info_state.dart';
+import '../../widgets/reservation_status_chip.dart';
+import '../../widgets/summary_stat_card.dart';
 
 class BookingApprovalPage extends StatefulWidget {
-  const BookingApprovalPage({super.key});
+  const BookingApprovalPage({
+    super.key,
+    this.showAppBar = true,
+  });
+
+  final bool showAppBar;
 
   @override
-  State<BookingApprovalPage> createState() =>
-      _BookingApprovalPageState();
+  State<BookingApprovalPage> createState() => _BookingApprovalPageState();
 }
 
 class _BookingApprovalPageState extends State<BookingApprovalPage> {
@@ -76,7 +82,6 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
           maxLines: 3,
           decoration: const InputDecoration(
             hintText: 'Masukkan alasan penolakan...',
-            border: OutlineInputBorder(),
           ),
         ),
         actions: [
@@ -199,235 +204,179 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Persetujuan Peminjaman'),
-      ),
-      body: StreamBuilder<List<ReservationModel>>(
-        stream: _firestoreService.getAllReservations(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
+    final bodyContent = StreamBuilder<List<ReservationModel>>(
+      stream: _firestoreService.getAllReservations(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(48),
               child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  'Gagal mengambil data reservasi:\n${snapshot.error}',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-
-          final allReservations =
-              snapshot.data ?? <ReservationModel>[];
-
-          final allBookings = allReservations
-              .where((item) => item.type != 'maintenance_block')
-              .toList();
-
-          final bookings = _filterBookings(allReservations);
-
-          final waiting = allBookings
-              .where((item) => item.status == 'pending')
-              .length;
-
-          final approved = allBookings
-              .where((item) => item.status == 'approved')
-              .length;
-
-          final rejected = allBookings
-              .where((item) => item.status == 'rejected')
-              .length;
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Persetujuan Peminjaman',
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.ink,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      'Periksa dan kelola pengajuan peminjaman laboratorium.',
-                      style: TextStyle(color: AppTheme.muted),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Statistik dari Firestore
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final columns =
-                            constraints.maxWidth >= 600 ? 3 : 1;
-
-                        return GridView.count(
-                          crossAxisCount: columns,
-                          shrinkWrap: true,
-                          physics:
-                              const NeverScrollableScrollPhysics(),
-                          crossAxisSpacing: 14,
-                          mainAxisSpacing: 14,
-                          childAspectRatio:
-                              columns == 3 ? 2.8 : 4,
-                          children: [
-                            _SummaryCard(
-                              title: 'Menunggu',
-                              value: '$waiting',
-                              icon: Icons.pending_actions,
-                              color: AppTheme.warning,
-                            ),
-                            _SummaryCard(
-                              title: 'Disetujui',
-                              value: '$approved',
-                              icon: Icons.check_circle_outline,
-                              color: AppTheme.success,
-                            ),
-                            _SummaryCard(
-                              title: 'Ditolak',
-                              value: '$rejected',
-                              icon: Icons.cancel_outlined,
-                              color: AppTheme.danger,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    const Text(
-                      'Daftar Pengajuan',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.ink,
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        'Semua',
-                        'Menunggu',
-                        'Disetujui',
-                        'Ditolak',
-                      ].map((filter) {
-                        return ChoiceChip(
-                          label: Text(filter),
-                          selected: _selectedFilter == filter,
-                          onSelected: (_) {
-                            setState(() {
-                              _selectedFilter = filter;
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    if (bookings.isEmpty)
-                      const Card(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(
-                            child: Text(
-                              'Tidak ada pengajuan pada kategori ini.',
-                              style: TextStyle(
-                                color: AppTheme.muted,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      ...bookings.map(
-                        (booking) => _BookingCard(
-                          booking: booking,
-                          formatDate: _formatDate,
-                          formatTime: _formatTime,
-                          onApprove: () =>
-                              _confirmAction(booking, 'approved'),
-                          onReject: () =>
-                              _confirmAction(booking, 'rejected'),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
             ),
           );
-        },
-      ),
-    );
-  }
-}
+        }
 
-class _SummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
+        if (snapshot.hasError) {
+          return InfoState(
+            icon: Icons.error_outline,
+            text: 'Gagal mengambil data reservasi.',
+            subtext: '${snapshot.error}',
+          );
+        }
 
-  const _SummaryCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
+        final allReservations = snapshot.data ?? <ReservationModel>[];
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+        final allBookings = allReservations
+            .where((item) => item.type != 'maintenance_block')
+            .toList();
+
+        final bookings = _filterBookings(allReservations);
+
+        final waiting = allBookings
+            .where((item) => item.status == 'pending')
+            .length;
+
+        final approved = allBookings
+            .where((item) => item.status == 'approved')
+            .length;
+
+        final rejected = allBookings
+            .where((item) => item.status == 'rejected')
+            .length;
+
+        return ListView(
+          padding: const EdgeInsets.all(24),
           children: [
-            Icon(icon, size: 30, color: color),
-            const SizedBox(width: 14),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const Text(
+              'Persetujuan Peminjaman',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.ink,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Periksa dan verifikasi pengajuan peminjaman laboratorium.',
+              style: TextStyle(color: AppTheme.muted),
+            ),
+            const SizedBox(height: 24),
+
+            // Statistik dari Firestore
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 600 ? 3 : 1;
+
+                return GridView.count(
+                  crossAxisCount: columns,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: columns == 3 ? 2.5 : 4.0,
+                  children: [
+                    SummaryStatCard(
+                      title: 'Menunggu',
+                      value: '$waiting',
+                      icon: Icons.pending_actions_outlined,
+                      iconColor: AppTheme.warning,
+                      backgroundColor: AppTheme.warningSoft,
+                    ),
+                    SummaryStatCard(
+                      title: 'Disetujui',
+                      value: '$approved',
+                      icon: Icons.check_circle_outline,
+                      iconColor: AppTheme.success,
+                      backgroundColor: AppTheme.successSoft,
+                    ),
+                    SummaryStatCard(
+                      title: 'Ditolak',
+                      value: '$rejected',
+                      icon: Icons.cancel_outlined,
+                      iconColor: AppTheme.danger,
+                      backgroundColor: AppTheme.dangerSoft,
+                    ),
+                  ],
+                );
+              },
+            ),
+
+            const SizedBox(height: 28),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
+                const Text(
+                  'Daftar Pengajuan',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.ink,
                   ),
                 ),
                 Text(
-                  title,
+                  '${bookings.length} pengajuan',
                   style: const TextStyle(
-                    fontSize: 12,
                     color: AppTheme.muted,
+                    fontSize: 13,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+
+            Wrap(
+              spacing: 8,
+              children: [
+                'Semua',
+                'Menunggu',
+                'Disetujui',
+                'Ditolak',
+              ].map((filter) {
+                return ChoiceChip(
+                  label: Text(filter),
+                  selected: _selectedFilter == filter,
+                  onSelected: (_) {
+                    setState(() {
+                      _selectedFilter = filter;
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 20),
+
+            if (bookings.isEmpty)
+              const InfoState(
+                icon: Icons.inbox_outlined,
+                text: 'Tidak ada pengajuan pada kategori ini.',
+                subtext: 'Pilih filter lain atau tunggu pengajuan masuk dari mahasiswa.',
+              )
+            else
+              ...bookings.map(
+                (booking) => _BookingCard(
+                  booking: booking,
+                  formatDate: _formatDate,
+                  formatTime: _formatTime,
+                  onApprove: () => _confirmAction(booking, 'approved'),
+                  onReject: () => _confirmAction(booking, 'rejected'),
+                ),
+              ),
           ],
-        ),
+        );
+      },
+    );
+
+    if (!widget.showAppBar) {
+      return PageWidth(maxWidth: 800, child: bodyContent);
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Persetujuan Peminjaman'),
       ),
+      body: PageWidth(maxWidth: 800, child: bodyContent),
     );
   }
 }
@@ -449,153 +398,128 @@ class _BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = switch (booking.status) {
-      'approved' => 'Disetujui',
-      'rejected' => 'Ditolak',
-      _ => 'Menunggu',
-    };
-
     final isWaiting = booking.status == 'pending';
 
-    final statusColor = switch (booking.status) {
-      'approved' => AppTheme.success,
-      'rejected' => AppTheme.danger,
-      _ => AppTheme.warning,
-    };
-
-    final statusBackground = switch (booking.status) {
-      'approved' => AppTheme.successSoft,
-      'rejected' => AppTheme.dangerSoft,
-      _ => AppTheme.warningSoft,
-    };
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 14),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    booking.reservationId,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primary,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusBackground,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: statusColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const Divider(height: 24),
-
-            Text(
-              booking.studentName,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.ink,
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
-            Text(
-              'NIM: ${booking.studentNim}',
-              style: const TextStyle(color: AppTheme.muted),
-            ),
-
-            const SizedBox(height: 16),
-
-            _InfoItem(
-              icon: Icons.science_outlined,
-              text: booking.labName,
-            ),
-
-            const SizedBox(height: 10),
-
-            _InfoItem(
-              icon: Icons.calendar_today_outlined,
-              text: formatDate(booking.startTime),
-            ),
-
-            const SizedBox(height: 10),
-
-            _InfoItem(
-              icon: Icons.access_time,
-              text: '${formatTime(booking.startTime)} - '
-                  '${formatTime(booking.endTime)}',
-            ),
-
-            const SizedBox(height: 10),
-
-            _InfoItem(
-              icon: Icons.description_outlined,
-              text: booking.purpose,
-            ),
-
-            if (booking.rejectionReason != null &&
-                booking.rejectionReason!.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              _InfoItem(
-                icon: Icons.info_outline,
-                text: 'Alasan penolakan: ${booking.rejectionReason}',
-              ),
-            ],
-
-            if (isWaiting) ...[
-              const Divider(height: 28),
-
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: onReject,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.danger,
-                      ),
-                      icon: const Icon(Icons.close, size: 18),
-                      label: const Text('Tolak'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          booking.reservationId,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.deep,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          booking.studentName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.ink,
+                          ),
+                        ),
+                        Text(
+                          'NIM: ${booking.studentNim.isEmpty ? '-' : booking.studentNim}',
+                          style: const TextStyle(
+                            color: AppTheme.muted,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: onApprove,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppTheme.success,
-                      ),
-                      icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Setujui'),
-                    ),
-                  ),
+                  ReservationStatusChip(status: booking.status),
                 ],
               ),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 14),
+                child: Divider(height: 1, color: AppTheme.outline),
+              ),
+
+              _InfoItem(
+                icon: Icons.apartment_outlined,
+                text: booking.labName,
+              ),
+              const SizedBox(height: 8),
+              _InfoItem(
+                icon: Icons.calendar_today_outlined,
+                text: formatDate(booking.startTime),
+              ),
+              const SizedBox(height: 8),
+              _InfoItem(
+                icon: Icons.access_time_outlined,
+                text:
+                    '${formatTime(booking.startTime)} - ${formatTime(booking.endTime)} WIB',
+              ),
+              const SizedBox(height: 8),
+              _InfoItem(
+                icon: Icons.description_outlined,
+                text: booking.purpose.isEmpty
+                    ? 'Keperluan tidak dicantumkan'
+                    : booking.purpose,
+              ),
+
+              if (booking.rejectionReason != null &&
+                  booking.rejectionReason!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _InfoItem(
+                  icon: Icons.info_outline,
+                  text: 'Catatan penolakan: ${booking.rejectionReason}',
+                  iconColor: AppTheme.danger,
+                  textColor: AppTheme.danger,
+                ),
+              ],
+
+              if (isWaiting) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Divider(height: 1, color: AppTheme.outline),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onReject,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.danger,
+                          side: const BorderSide(color: AppTheme.danger),
+                        ),
+                        icon: const Icon(Icons.close, size: 18),
+                        label: const Text('Tolak'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: onApprove,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.success,
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.check, size: 18),
+                        label: const Text('Setujui'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -605,10 +529,14 @@ class _BookingCard extends StatelessWidget {
 class _InfoItem extends StatelessWidget {
   final IconData icon;
   final String text;
+  final Color? iconColor;
+  final Color? textColor;
 
   const _InfoItem({
     required this.icon,
     required this.text,
+    this.iconColor,
+    this.textColor,
   });
 
   @override
@@ -619,15 +547,15 @@ class _InfoItem extends StatelessWidget {
         Icon(
           icon,
           size: 17,
-          color: AppTheme.muted,
+          color: iconColor ?? AppTheme.muted,
         ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppTheme.muted,
+              color: textColor ?? AppTheme.muted,
             ),
           ),
         ),

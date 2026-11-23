@@ -1,29 +1,191 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../app_theme.dart';
 import '../../models/laboratory_model.dart';
 import '../../models/reservation_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
-import 'laboratory_management_page.dart';
+import '../../widgets/info_state.dart';
+import '../../widgets/reservation_status_chip.dart';
+import '../../widgets/summary_stat_card.dart';
 import 'booking_approval_page.dart';
+import 'laboratory_form_page.dart';
+import 'laboratory_management_page.dart';
 import 'walk_in_page.dart';
 
-class AdminDashboard extends StatelessWidget {
-  const AdminDashboard({super.key});
+class AdminDashboard extends StatefulWidget {
+  const AdminDashboard({
+    super.key,
+    this.initialTab = 0,
+  });
 
-  static final FirestoreService _firestoreService =
-      FirestoreService();
+  final int initialTab;
 
-  void _openPage(BuildContext context, Widget page) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => page,
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
+  late int _selectedTab = widget.initialTab;
+  final FirestoreService _firestoreService = FirestoreService();
+
+  Future<void> _confirmSignOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Keluar dari Akun?'),
+        content: const Text(
+          'Apakah kamu yakin ingin keluar dari sesi administrasi LabBook?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.danger,
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Keluar'),
+          ),
+        ],
       ),
     );
+
+    if (confirmed == true && mounted) {
+      await AuthService().signOut();
+    }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 850;
+
+        final tabs = [
+          _AdminOverviewView(
+            firestoreService: _firestoreService,
+            onSelectTab: (index) => setState(() => _selectedTab = index),
+          ),
+          const LaboratoryManagementPage(showAppBar: false),
+          const BookingApprovalPage(showAppBar: false),
+          const WalkInPage(showAppBar: false),
+        ];
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/images/labbook-logo.svg',
+                  width: 26,
+                  height: 26,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'LabBook',
+                  style: TextStyle(
+                    color: AppTheme.deep,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.soft,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'Admin',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                tooltip: 'Keluar',
+                onPressed: _confirmSignOut,
+                icon: const Icon(Icons.logout),
+              ),
+              const SizedBox(width: 12),
+            ],
+          ),
+          body: isWide
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _AdminSidebar(
+                      selectedIndex: _selectedTab,
+                      onDestinationSelected: (i) =>
+                          setState(() => _selectedTab = i),
+                    ),
+                    const VerticalDivider(width: 1, color: AppTheme.outline),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _selectedTab,
+                        children: tabs,
+                      ),
+                    ),
+                  ],
+                )
+              : IndexedStack(
+                  index: _selectedTab,
+                  children: tabs,
+                ),
+          bottomNavigationBar: isWide
+              ? null
+              : NavigationBar(
+                  selectedIndex: _selectedTab,
+                  onDestinationSelected: (i) =>
+                      setState(() => _selectedTab = i),
+                  destinations: const [
+                    NavigationDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home),
+                      label: 'Beranda',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.apartment_outlined),
+                      selectedIcon: Icon(Icons.apartment),
+                      label: 'Laboratorium',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.fact_check_outlined),
+                      selectedIcon: Icon(Icons.fact_check),
+                      label: 'Persetujuan',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.meeting_room_outlined),
+                      selectedIcon: Icon(Icons.meeting_room),
+                      label: 'Walk-in',
+                    ),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _AdminOverviewView extends StatelessWidget {
+  const _AdminOverviewView({
+    required this.firestoreService,
+    required this.onSelectTab,
+  });
+
+  final FirestoreService firestoreService;
+  final ValueChanged<int> onSelectTab;
 
   String _formatDate(DateTime date) {
     const months = [
@@ -40,73 +202,63 @@ class AdminDashboard extends StatelessWidget {
       'Nov',
       'Des',
     ];
-
     return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour.$minute';
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const Icon(
-              Icons.science_outlined,
-              color: AppTheme.primary,
-            ),
-            const SizedBox(width: 10),
-            const Text('LabBook Admin'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Keluar',
-            onPressed: () async {
-              await AuthService().signOut();
-            },
-            icon: const Icon(Icons.logout),
-          ),
-          const SizedBox(width: 12),
-        ],
-      ),
-      body: StreamBuilder<List<LaboratoryModel>>(
-        stream: _firestoreService.getAllLaboratories(),
+    return PageWidth(
+      maxWidth: 850,
+      child: StreamBuilder<List<LaboratoryModel>>(
+        stream: firestoreService.getAllLaboratories(),
         builder: (context, labSnapshot) {
-          if (labSnapshot.hasError) {
-            return Center(
-              child: Text(
-                'Gagal memuat data laboratorium: ${labSnapshot.error}',
+          if (labSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(48),
+                child: CircularProgressIndicator(),
               ),
             );
           }
 
-          if (!labSnapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
+          if (labSnapshot.hasError) {
+            return InfoState(
+              icon: Icons.error_outline,
+              text: 'Gagal memuat data laboratorium.',
+              subtext: '${labSnapshot.error}',
             );
           }
 
-          final laboratories = labSnapshot.data!;
+          final laboratories = labSnapshot.data ?? [];
 
           return StreamBuilder<List<ReservationModel>>(
-            stream: _firestoreService.getAllReservations(),
+            stream: firestoreService.getAllReservations(),
             builder: (context, reservationSnapshot) {
-              if (reservationSnapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Gagal memuat data reservasi: '
-                    '${reservationSnapshot.error}',
+              if (reservationSnapshot.connectionState ==
+                  ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48),
+                    child: CircularProgressIndicator(),
                   ),
                 );
               }
 
-              if (!reservationSnapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
+              if (reservationSnapshot.hasError) {
+                return InfoState(
+                  icon: Icons.error_outline,
+                  text: 'Gagal memuat data reservasi.',
+                  subtext: '${reservationSnapshot.error}',
                 );
               }
 
-              final reservations = reservationSnapshot.data!;
+              final reservations = reservationSnapshot.data ?? [];
 
               final normalReservations = reservations
                   .where((item) => item.type != 'maintenance_block')
@@ -122,416 +274,326 @@ class AdminDashboard extends StatelessWidget {
                   .where((item) => item.status == 'pending')
                   .length;
 
-              final activeLaboratories = laboratories
-                  .where((lab) => lab.isActive)
-                  .length;
+              final activeLaboratories =
+                  laboratories.where((lab) => lab.isActive).length;
 
               final recentReservations =
                   normalReservations.take(5).toList();
 
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  final isWide = constraints.maxWidth >= 850;
+              return ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  const Text(
+                    'Halo, Administrator!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Kelola ketersediaan laboratorium dan pantau reservasi kampus.',
+                    style: TextStyle(color: AppTheme.muted),
+                  ),
+                  const SizedBox(height: 24),
 
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (isWide) const _AdminSidebar(),
+                  // Statistik Grid
+                  LayoutBuilder(
+                    builder: (context, box) {
+                      final columns = box.maxWidth >= 700
+                          ? 4
+                          : box.maxWidth >= 450
+                              ? 2
+                              : 1;
 
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      return GridView.count(
+                        crossAxisCount: columns,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
+                        childAspectRatio: columns >= 4
+                            ? 1.9
+                            : columns == 2
+                                ? 2.5
+                                : 3.8,
+                        children: [
+                          SummaryStatCard(
+                            title: 'Total Lab',
+                            value: '${laboratories.length}',
+                            icon: Icons.science_outlined,
+                            iconColor: AppTheme.primary,
+                            backgroundColor: AppTheme.soft,
+                            onTap: () => onSelectTab(1),
+                          ),
+                          SummaryStatCard(
+                            title: 'Reservasi Hari Ini',
+                            value: '$todayReservations',
+                            icon: Icons.calendar_today_outlined,
+                            iconColor: AppTheme.deep,
+                            backgroundColor: AppTheme.soft,
+                            onTap: () => onSelectTab(2),
+                          ),
+                          SummaryStatCard(
+                            title: 'Menunggu Review',
+                            value: '$pendingReservations',
+                            icon: Icons.pending_actions_outlined,
+                            iconColor: AppTheme.warning,
+                            backgroundColor: AppTheme.warningSoft,
+                            onTap: () => onSelectTab(2),
+                          ),
+                          SummaryStatCard(
+                            title: 'Lab Aktif',
+                            value: '$activeLaboratories',
+                            icon: Icons.check_circle_outline,
+                            iconColor: AppTheme.success,
+                            backgroundColor: AppTheme.successSoft,
+                            onTap: () => onSelectTab(1),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Aksi Cepat
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Aksi Cepat',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.ink,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
                             children: [
-                              const Text(
-                                'Dashboard',
-                                style: TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.ink,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              const Text(
-                                'Selamat datang di halaman administrasi LabBook.',
-                                style: TextStyle(
-                                  color: AppTheme.muted,
-                                ),
-                              ),
-
-                              const SizedBox(height: 28),
-
-                              // Statistik Dashboard
-                              LayoutBuilder(
-                                builder: (context, box) {
-                                  final columns = box.maxWidth >= 700
-                                      ? 4
-                                      : box.maxWidth >= 450
-                                          ? 2
-                                          : 1;
-
-                                  final stats = [
-                                    _StatData(
-                                      title: 'Total Laboratorium',
-                                      value: '${laboratories.length}',
-                                      icon: Icons.science_outlined,
-                                      color: AppTheme.primary,
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const LaboratoryFormPage(),
                                     ),
-                                    _StatData(
-                                      title: 'Reservasi Hari Ini',
-                                      value: '$todayReservations',
-                                      icon: Icons.calendar_today_outlined,
-                                      color: Colors.orange,
-                                    ),
-                                    _StatData(
-                                      title: 'Menunggu Persetujuan',
-                                      value: '$pendingReservations',
-                                      icon: Icons.pending_actions_outlined,
-                                      color: Colors.deepOrange,
-                                    ),
-                                    _StatData(
-                                      title: 'Laboratorium Aktif',
-                                      value: '$activeLaboratories',
-                                      icon: Icons.check_circle_outline,
-                                      color: AppTheme.success,
-                                    ),
-                                  ];
-
-                                  return GridView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: stats.length,
-                                    gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: columns,
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
-                                      mainAxisExtent: 125,
-                                    ),
-                                    itemBuilder: (context, index) {
-                                      return _StatCard(
-                                        data: stats[index],
-                                      );
-                                    },
                                   );
                                 },
-                              ),
-
-                              const SizedBox(height: 32),
-
-                              // Reservasi Terbaru
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Reservasi Terbaru',
-                                    style: TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.ink,
-                                    ),
+                                icon: const Icon(Icons.add, size: 18),
+                                label: const Text('Tambah Lab'),
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(0, 42),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
                                   ),
-
-                                  TextButton(
-                                    onPressed: () {
-                                      _openPage(
-                                        context,
-                                        const BookingApprovalPage(),
-                                      );
-                                    },
-                                    child: const Text('Lihat Semua'),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              Card(
-                                child: recentReservations.isEmpty
-                                    ? const Padding(
-                                        padding: EdgeInsets.all(28),
-                                        child: Center(
-                                          child: Text(
-                                            'Belum ada reservasi.',
-                                            style: TextStyle(
-                                              color: AppTheme.muted,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : Column(
-                                        children: [
-                                          for (int i = 0;
-                                              i < recentReservations.length;
-                                              i++) ...[
-                                            _BookingTile(
-                                              name: recentReservations[i]
-                                                  .studentName,
-                                              laboratory: recentReservations[i]
-                                                  .labName,
-                                              date: _formatDate(
-                                                recentReservations[i]
-                                                    .startTime,
-                                              ),
-                                              status: _getStatus(
-                                                recentReservations[i].status,
-                                              ),
-                                            ),
-                                            if (i <
-                                                recentReservations.length - 1)
-                                              const Divider(
-                                                height: 1,
-                                                color: AppTheme.outline,
-                                              ),
-                                          ],
-                                        ],
-                                      ),
-                              ),
-
-                              const SizedBox(height: 28),
-
-                              // Informasi Sistem
-                              const Text(
-                                'Informasi Sistem',
-                                style: TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.ink,
                                 ),
                               ),
-
-                              const SizedBox(height: 14),
-
-                              Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(18),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.info_outline,
-                                        color: AppTheme.primary,
-                                        size: 30,
-                                      ),
-
-                                      const SizedBox(width: 14),
-
-                                      const Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Sistem LabBook',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.ink,
-                                              ),
-                                            ),
-
-                                            SizedBox(height: 5),
-
-                                            Text(
-                                              'Kelola informasi laboratorium dan '
-                                              'pantau aktivitas reservasi kampus.',
-                                              style: TextStyle(
-                                                color: AppTheme.muted,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                              OutlinedButton.icon(
+                                onPressed: () => onSelectTab(2),
+                                icon: const Icon(
+                                  Icons.pending_actions_outlined,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  'Review Pengajuan ($pendingReservations)',
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(0, 42),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                ),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: () => onSelectTab(3),
+                                icon: const Icon(
+                                  Icons.meeting_room_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Catat Walk-in'),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(0, 42),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
                                   ),
                                 ),
                               ),
                             ],
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Reservasi Terbaru
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Reservasi Terbaru',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.ink,
                         ),
                       ),
+                      TextButton(
+                        onPressed: () => onSelectTab(2),
+                        child: const Text('Lihat Semua'),
+                      ),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(height: 8),
+
+                  if (recentReservations.isEmpty)
+                    const Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: InfoState(
+                          icon: Icons.event_available_outlined,
+                          text: 'Belum ada reservasi masuk.',
+                          subtext: 'Pengajuan dari mahasiswa akan ditampilkan di sini.',
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    )
+                  else
+                    Card(
+                      child: Column(
+                        children: [
+                          for (int i = 0;
+                              i < recentReservations.length;
+                              i++) ...[
+                            ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 6,
+                              ),
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.soft,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.person_outline,
+                                  color: AppTheme.deep,
+                                  size: 22,
+                                ),
+                              ),
+                              title: Text(
+                                recentReservations[i].studentName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                  color: AppTheme.ink,
+                                ),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 3),
+                                child: Text(
+                                  '${recentReservations[i].labName} • '
+                                  '${_formatDate(recentReservations[i].startTime)} '
+                                  '(${_formatTime(recentReservations[i].startTime)} - '
+                                  '${_formatTime(recentReservations[i].endTime)})',
+                                  style: const TextStyle(
+                                    color: AppTheme.muted,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              trailing: ReservationStatusChip(
+                                status: recentReservations[i].status,
+                                compact: true,
+                              ),
+                              onTap: () => onSelectTab(2),
+                            ),
+                            if (i < recentReservations.length - 1)
+                              const Divider(
+                                height: 1,
+                                color: AppTheme.outline,
+                              ),
+                          ],
+                        ],
+                      ),
+                    ),
+                ],
               );
             },
           );
         },
       ),
-
-      // Navigasi bawah untuk layar HP
-      bottomNavigationBar:
-          MediaQuery.of(context).size.width < 850
-              ? const _AdminBottomNavigation()
-              : null,
-    );
-  }
-
-  String _getStatus(String status) {
-    switch (status) {
-      case 'pending':
-        return 'Menunggu';
-      case 'approved':
-        return 'Disetujui';
-      case 'rejected':
-        return 'Ditolak';
-      case 'cancelled':
-        return 'Dibatalkan';
-      case 'completed':
-        return 'Selesai';
-      default:
-        return status;
-    }
-  }
-}
-
-// =====================================================
-// NAVIGASI BAWAH UNTUK HP
-// =====================================================
-
-class _AdminBottomNavigation extends StatelessWidget {
-  const _AdminBottomNavigation();
-
-  void _openPage(BuildContext context, Widget page) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => page,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomAppBar(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            tooltip: 'Dashboard',
-            onPressed: () {},
-            icon: const Icon(
-              Icons.dashboard_outlined,
-              color: AppTheme.primary,
-            ),
-          ),
-
-          IconButton(
-            tooltip: 'Laboratorium',
-            onPressed: () {
-              _openPage(
-                context,
-                const LaboratoryManagementPage(),
-              );
-            },
-            icon: const Icon(Icons.science_outlined),
-          ),
-
-          IconButton(
-            tooltip: 'Persetujuan',
-            onPressed: () {
-              _openPage(
-                context,
-                const BookingApprovalPage(),
-              );
-            },
-            icon: const Icon(Icons.pending_actions_outlined),
-          ),
-
-          IconButton(
-            tooltip: 'Peminjaman Langsung',
-            onPressed: () {
-              _openPage(
-                context,
-                const WalkInPage(),
-              );
-            },
-            icon: const Icon(Icons.meeting_room_outlined),
-          ),
-        ],
-      ),
     );
   }
 }
-
-// =====================================================
-// SIDEBAR UNTUK DESKTOP
-// =====================================================
 
 class _AdminSidebar extends StatelessWidget {
-  const _AdminSidebar();
+  const _AdminSidebar({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
 
-  void _openPage(BuildContext context, Widget page) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => page,
-      ),
-    );
-  }
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 230,
-      height: double.infinity,
+      width: 240,
       color: Colors.white,
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'MENU ADMIN',
+            'MENU ADMINISTRASI',
             style: TextStyle(
               color: AppTheme.muted,
               fontWeight: FontWeight.bold,
-              fontSize: 12,
+              fontSize: 11,
+              letterSpacing: 0.5,
             ),
           ),
-
-          const SizedBox(height: 18),
-
-          const _SidebarItem(
-            icon: Icons.dashboard_outlined,
-            title: 'Dashboard',
-            selected: true,
-          ),
-
+          const SizedBox(height: 16),
           _SidebarItem(
-            icon: Icons.science_outlined,
+            icon: Icons.home_outlined,
+            selectedIcon: Icons.home,
+            title: 'Beranda',
+            selected: selectedIndex == 0,
+            onTap: () => onDestinationSelected(0),
+          ),
+          _SidebarItem(
+            icon: Icons.apartment_outlined,
+            selectedIcon: Icons.apartment,
             title: 'Kelola Laboratorium',
-            onTap: () {
-              _openPage(
-                context,
-                const LaboratoryManagementPage(),
-              );
-            },
+            selected: selectedIndex == 1,
+            onTap: () => onDestinationSelected(1),
           ),
-
           _SidebarItem(
-            icon: Icons.pending_actions_outlined,
+            icon: Icons.fact_check_outlined,
+            selectedIcon: Icons.fact_check,
             title: 'Persetujuan Peminjaman',
-            onTap: () {
-              _openPage(
-                context,
-                const BookingApprovalPage(),
-              );
-            },
+            selected: selectedIndex == 2,
+            onTap: () => onDestinationSelected(2),
           ),
-
           _SidebarItem(
             icon: Icons.meeting_room_outlined,
+            selectedIcon: Icons.meeting_room,
             title: 'Peminjaman Langsung',
-            onTap: () {
-              _openPage(
-                context,
-                const WalkInPage(),
-              );
-            },
+            selected: selectedIndex == 3,
+            onTap: () => onDestinationSelected(3),
           ),
         ],
       ),
@@ -539,27 +601,25 @@ class _AdminSidebar extends StatelessWidget {
   }
 }
 
-// =====================================================
-// ITEM SIDEBAR
-// =====================================================
-
 class _SidebarItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final bool selected;
-  final VoidCallback? onTap;
-
   const _SidebarItem({
     required this.icon,
+    required this.selectedIcon,
     required this.title,
-    this.selected = false,
-    this.onTap,
+    required this.selected,
+    required this.onTap,
   });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String title;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       child: ListTile(
         selected: selected,
         selectedTileColor: AppTheme.soft,
@@ -567,170 +627,18 @@ class _SidebarItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         leading: Icon(
-          icon,
+          selected ? selectedIcon : icon,
           color: selected ? AppTheme.primary : AppTheme.muted,
         ),
         title: Text(
           title,
           style: TextStyle(
             fontSize: 13,
-            fontWeight:
-                selected ? FontWeight.bold : FontWeight.normal,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
             color: selected ? AppTheme.primary : AppTheme.ink,
           ),
         ),
         onTap: onTap,
-      ),
-    );
-  }
-}
-
-// =====================================================
-// DATA STATISTIK
-// =====================================================
-
-class _StatData {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _StatData({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-}
-
-// =====================================================
-// KARTU STATISTIK
-// =====================================================
-
-class _StatCard extends StatelessWidget {
-  final _StatData data;
-
-  const _StatCard({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(
-              data.icon,
-              color: data.color,
-              size: 26,
-            ),
-
-            Text(
-              data.value,
-              style: const TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.ink,
-              ),
-            ),
-
-            Text(
-              data.title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppTheme.muted,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// =====================================================
-// ITEM RESERVASI
-// =====================================================
-
-class _BookingTile extends StatelessWidget {
-  final String name;
-  final String laboratory;
-  final String date;
-  final String status;
-
-  const _BookingTile({
-    required this.name,
-    required this.laboratory,
-    required this.date,
-    required this.status,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Color statusColor;
-    final Color statusBackground;
-
-    switch (status) {
-      case 'Disetujui':
-      case 'Selesai':
-        statusColor = AppTheme.success;
-        statusBackground = AppTheme.successSoft;
-        break;
-      case 'Ditolak':
-      case 'Dibatalkan':
-        statusColor = AppTheme.danger;
-        statusBackground = AppTheme.dangerSoft;
-        break;
-      default:
-        statusColor = AppTheme.warning;
-        statusBackground = AppTheme.warningSoft;
-    }
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 8,
-      ),
-
-      leading: CircleAvatar(
-        backgroundColor: AppTheme.soft,
-        child: const Icon(
-          Icons.person_outline,
-          color: AppTheme.primary,
-        ),
-      ),
-
-      title: Text(
-        name,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          color: AppTheme.ink,
-        ),
-      ),
-
-      subtitle: Text('$laboratory\n$date'),
-
-      isThreeLine: true,
-
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 6,
-        ),
-        decoration: BoxDecoration(
-          color: statusBackground,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          status,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: statusColor,
-          ),
-        ),
       ),
     );
   }

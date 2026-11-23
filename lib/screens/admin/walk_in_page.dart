@@ -1,4 +1,3 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -6,9 +5,16 @@ import '../../app_theme.dart';
 import '../../models/laboratory_model.dart';
 import '../../models/reservation_model.dart';
 import '../../services/firestore_service.dart';
+import '../../widgets/info_state.dart';
+import '../../widgets/reservation_status_chip.dart';
 
 class WalkInPage extends StatefulWidget {
-  const WalkInPage({super.key});
+  const WalkInPage({
+    super.key,
+    this.showAppBar = true,
+  });
+
+  final bool showAppBar;
 
   @override
   State<WalkInPage> createState() => _WalkInPageState();
@@ -109,7 +115,7 @@ class _WalkInPageState extends State<WalkInPage> {
     if (selectedLabs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Laboratorium tidak ditemukan.'),
+          content: Text('Laboratorium belum dipilih.'),
         ),
       );
       return;
@@ -218,332 +224,380 @@ class _WalkInPageState extends State<WalkInPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Peminjaman Langsung'),
-      ),
-      body: StreamBuilder<List<LaboratoryModel>>(
-        stream: _firestoreService.getActiveLaboratories(),
-        builder: (context, labSnapshot) {
-          if (labSnapshot.hasError) {
-            return Center(
-              child: Text(
-                'Gagal memuat laboratorium: ${labSnapshot.error}',
-              ),
-            );
-          }
-
-          if (!labSnapshot.hasData) {
-            return const Center(
+    final bodyContent = StreamBuilder<List<LaboratoryModel>>(
+      stream: _firestoreService.getActiveLaboratories(),
+      builder: (context, labSnapshot) {
+        if (labSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(48),
               child: CircularProgressIndicator(),
-            );
-          }
+            ),
+          );
+        }
 
-          final laboratories = labSnapshot.data!;
+        if (labSnapshot.hasError) {
+          return InfoState(
+            icon: Icons.error_outline,
+            text: 'Gagal memuat laboratorium.',
+            subtext: '${labSnapshot.error}',
+          );
+        }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 850),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Pencatatan Peminjaman Langsung',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.ink,
+        final laboratories = labSnapshot.data ?? [];
+
+        return ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            const Text(
+              'Peminjaman Langsung (Walk-in)',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.ink,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Catat penggunaan laboratorium secara langsung di tempat oleh admin.',
+              style: TextStyle(color: AppTheme.muted),
+            ),
+            const SizedBox(height: 24),
+
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Form Peminjaman',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.ink,
+                        ),
                       ),
+                      const SizedBox(height: 18),
+
+                      _buildTextField(
+                        controller: _nameController,
+                        label: 'Nama Peminjam',
+                        hint: 'Masukkan nama peminjam',
+                        icon: Icons.person_outline,
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildTextField(
+                        controller: _nimController,
+                        label: 'NIM Mahasiswa',
+                        hint: 'Masukkan NIM peminjam',
+                        icon: Icons.badge_outlined,
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Laboratorium',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: AppTheme.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedLaboratoryId,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.apartment_outlined),
+                          hintText: 'Pilih laboratorium',
+                        ),
+                        items: laboratories.map((lab) {
+                          return DropdownMenuItem<String>(
+                            value: lab.labId,
+                            child: Text(lab.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedLaboratoryId = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Pilih laboratorium terlebih dahulu.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Tanggal Penggunaan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: AppTheme.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      OutlinedButton.icon(
+                        onPressed: _chooseDate,
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        icon: const Icon(Icons.calendar_today_outlined, size: 20),
+                        label: Text(
+                          _formatDate(_selectedDate),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.normal,
+                            color: AppTheme.ink,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Waktu Penggunaan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: AppTheme.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _chooseTime(isStart: true),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                              icon: const Icon(Icons.access_time, size: 18),
+                              label: Text(
+                                _formatTime(_startTime),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.ink,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              's/d',
+                              style: TextStyle(color: AppTheme.muted),
+                            ),
+                          ),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _chooseTime(isStart: false),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                              icon: const Icon(Icons.access_time, size: 18),
+                              label: Text(
+                                _formatTime(_endTime),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.ink,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildTextField(
+                        controller: _purposeController,
+                        label: 'Keperluan',
+                        hint: 'Masukkan tujuan atau kegiatan di lab...',
+                        icon: Icons.description_outlined,
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 24),
+
+                      ElevatedButton.icon(
+                        onPressed: _isSaving
+                            ? null
+                            : () => _saveBooking(laboratories),
+                        icon: _isSaving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: Text(
+                          _isSaving
+                              ? 'Menyimpan...'
+                              : 'Simpan Peminjaman Langsung',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            const Text(
+              'Riwayat Peminjaman Langsung',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.ink,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            StreamBuilder<List<ReservationModel>>(
+              stream: _firestoreService.getAllReservations(),
+              builder: (context, reservationSnapshot) {
+                if (reservationSnapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: CircularProgressIndicator(),
                     ),
+                  );
+                }
 
-                    const SizedBox(height: 8),
+                if (reservationSnapshot.hasError) {
+                  return InfoState(
+                    icon: Icons.error_outline,
+                    text: 'Gagal memuat riwayat.',
+                    subtext: '${reservationSnapshot.error}',
+                  );
+                }
 
-                    const Text(
-                      'Catat penggunaan laboratorium secara langsung oleh admin.',
-                      style: TextStyle(color: AppTheme.muted),
-                    ),
+                final history = (reservationSnapshot.data ?? [])
+                    .where((booking) => booking.type == 'walk_in')
+                    .toList();
 
-                    const SizedBox(height: 24),
+                if (history.isEmpty) {
+                  return const InfoState(
+                    icon: Icons.history_outlined,
+                    text: 'Belum ada riwayat peminjaman langsung.',
+                    subtext: 'Peminjaman langsung yang dicatat akan muncul di sini.',
+                  );
+                }
 
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
+                return Column(
+                  children: history.map((booking) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Form Peminjaman',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.ink,
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.soft,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.meeting_room_outlined,
+                                  color: AppTheme.deep,
+                                  size: 22,
                                 ),
                               ),
-
-                              const SizedBox(height: 20),
-
-                              _buildTextField(
-                                controller: _nameController,
-                                label: 'Nama Peminjam',
-                                hint: 'Masukkan nama peminjam',
-                                icon: Icons.person_outline,
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              _buildTextField(
-                                controller: _nimController,
-                                label: 'NIM',
-                                hint: 'Masukkan NIM peminjam',
-                                icon: Icons.badge_outlined,
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              const Text(
-                                'Laboratorium',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.ink,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              DropdownButtonFormField<String>(
-                                initialValue: _selectedLaboratoryId,
-                                decoration: const InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.science_outlined,
-                                  ),
-                                  hintText: 'Pilih laboratorium',
-                                ),
-                                items: laboratories.map((lab) {
-                                  return DropdownMenuItem<String>(
-                                    value: lab.labId,
-                                    child: Text(lab.name),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedLaboratoryId = value;
-                                  });
-                                },
-                                validator: (value) {
-                                  if (value == null) {
-                                    return 'Pilih laboratorium.';
-                                  }
-                                  return null;
-                                },
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              const Text(
-                                'Tanggal Penggunaan',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.ink,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              OutlinedButton.icon(
-                                onPressed: _chooseDate,
-                                icon: const Icon(Icons.calendar_today),
-                                label: Text(_formatDate(_selectedDate)),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              const Text(
-                                'Waktu Penggunaan',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.ink,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton.icon(
-                                      onPressed: () =>
-                                          _chooseTime(isStart: true),
-                                      icon: const Icon(
-                                        Icons.access_time,
-                                      ),
-                                      label: Text(
-                                        _formatTime(_startTime),
-                                      ),
-                                    ),
-                                  ),
-
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                    ),
-                                    child: Text('sampai'),
-                                  ),
-
-                                  Expanded(
-                                    child: OutlinedButton.icon(
-                                      onPressed: () =>
-                                          _chooseTime(isStart: false),
-                                      icon: const Icon(
-                                        Icons.access_time,
-                                      ),
-                                      label: Text(
-                                        _formatTime(_endTime),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              _buildTextField(
-                                controller: _purposeController,
-                                label: 'Keperluan',
-                                hint: 'Masukkan keperluan penggunaan lab',
-                                icon: Icons.description_outlined,
-                                maxLines: 3,
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              SizedBox(
-                                width: double.infinity,
-                                child: FilledButton.icon(
-                                  onPressed: _isSaving
-                                      ? null
-                                      : () => _saveBooking(laboratories),
-                                  icon: _isSaving
-                                      ? const SizedBox(
-                                          width: 18,
-                                          height: 18,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            booking.studentName,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 15,
+                                              color: AppTheme.ink,
+                                            ),
                                           ),
-                                        )
-                                      : const Icon(Icons.save_outlined),
-                                  label: Text(
-                                    _isSaving
-                                        ? 'Menyimpan...'
-                                        : 'Simpan Peminjaman',
-                                  ),
+                                        ),
+                                        ReservationStatusChip(
+                                          status: booking.status,
+                                          compact: true,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${booking.labName} • ${_formatDateTime(booking.startTime)}',
+                                      style: const TextStyle(
+                                        color: AppTheme.deep,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'NIM: ${booking.studentNim} | Keperluan: ${booking.purpose}',
+                                      style: const TextStyle(
+                                        color: AppTheme.muted,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    const Text(
-                      'Riwayat Peminjaman Langsung',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.ink,
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    StreamBuilder<List<ReservationModel>>(
-                      stream: _firestoreService.getAllReservations(),
-                      builder: (context, reservationSnapshot) {
-                        if (reservationSnapshot.hasError) {
-                          return Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: Text(
-                                'Gagal memuat riwayat: '
-                                '${reservationSnapshot.error}',
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (!reservationSnapshot.hasData) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-
-                        final history = reservationSnapshot.data!
-                            .where((booking) => booking.type == 'walk_in')
-                            .toList();
-
-                        if (history.isEmpty) {
-                          return const Card(
-                            child: Padding(
-                              padding: EdgeInsets.all(28),
-                              child: Center(
-                                child: Text(
-                                  'Belum ada riwayat peminjaman langsung.',
-                                  style: TextStyle(
-                                    color: AppTheme.muted,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        return Column(
-                          children: history.map((booking) {
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor: AppTheme.soft,
-                                  child: Icon(
-                                    Icons.science_outlined,
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                title: Text(
-                                  booking.studentName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    '${booking.labName}\n'
-                                    '${_formatDateTime(booking.startTime)}'
-                                    ' - ${_formatTime(TimeOfDay.fromDateTime(booking.endTime))}\n'
-                                    'NIM: ${booking.studentNim}\n'
-                                    'Keperluan: ${booking.purpose}',
-                                  ),
-                                ),
-                                isThreeLine: true,
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+                    );
+                  }).toList(),
+                );
+              },
             ),
-          );
-        },
+          ],
+        );
+      },
+    );
+
+    if (!widget.showAppBar) {
+      return PageWidth(maxWidth: 800, child: bodyContent);
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Peminjaman Langsung'),
       ),
+      body: PageWidth(maxWidth: 800, child: bodyContent),
     );
   }
 
@@ -561,12 +615,11 @@ class _WalkInPageState extends State<WalkInPage> {
           label,
           style: const TextStyle(
             fontWeight: FontWeight.w600,
+            fontSize: 13,
             color: AppTheme.ink,
           ),
         ),
-
-        const SizedBox(height: 8),
-
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
