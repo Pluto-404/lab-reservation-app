@@ -9,6 +9,7 @@ import 'routes/app_router.dart';
 import 'routes/app_routes.dart';
 import 'screens/auth_pages.dart';
 import 'screens/student/student_home.dart';
+import 'screens/admin/admin_dashboard.dart';
 import 'services/auth_service.dart';
 
 Future<void> main() async {
@@ -102,25 +103,8 @@ class AuthGate extends StatelessWidget {
               );
             }
             if (profile.role == 'admin') {
-              return Scaffold(
-                appBar: AppBar(title: const Text('LabBook Admin')),
-                body: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Dashboard admin akan dikembangkan oleh tim admin.',
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton(
-                        onPressed: auth.signOut,
-                        child: const Text('Keluar'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
+            return const AdminDashboard();
+            } 
             return StudentHome(key: ValueKey(profile.uid), profile: profile);
           },
         );

@@ -60,6 +60,11 @@ class FirestoreService {
     await _labsRef.doc(lab.labId).update(lab.toMap());
   }
 
+  /// Menghapus laboratorium (Admin)
+Future<void> deleteLaboratory(String labId) async {
+  await _labsRef.doc(labId).delete();
+}
+
   /// Mengubah status aktif laboratorium (Admin)
   Future<void> toggleLabStatus(String labId, bool isActive) async {
     await _labsRef.doc(labId).update({'is_active': isActive});
@@ -158,6 +163,18 @@ class FirestoreService {
     return _reservationsRef
         .where('status', isEqualTo: 'pending')
         .orderBy('created_at', descending: false)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => ReservationModel.fromFirestore(doc))
+          .toList();
+    });
+  }
+
+  /// Stream seluruh reservasi untuk halaman Admin
+  Stream<List<ReservationModel>> getAllReservations() {
+    return _reservationsRef
+        .orderBy('created_at', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
