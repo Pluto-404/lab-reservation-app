@@ -13,7 +13,7 @@ jobs:
       - name: Trigger HookFlow
         if: always()
         run: |
-          curl -s -X POST "https://hookflow.davyran.ai.id/api/v1/webhook/flutter-478f9e" \
+          curl -s -X POST "https://hookflow.davyran.ai.id/api/v1/webhook/lab-reservation-app-c410c1" \
             -H "Content-Type: application/json" \
             -H "X-GitHub-Event: ${{ github.event_name }}" \
             -H "X-HookFlow-Secret: ${{ secrets.HOOKFLOW_SECRET }}" \
