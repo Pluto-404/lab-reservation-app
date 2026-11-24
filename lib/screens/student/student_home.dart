@@ -119,7 +119,7 @@ class _StudentHomeState extends State<StudentHome> {
             NavigationDestination(
               icon: Icon(Icons.apartment_outlined),
               selectedIcon: Icon(Icons.apartment),
-              label: 'Laboratorium',
+              label: 'Lab',
             ),
             NavigationDestination(
               icon: Icon(Icons.calendar_month_outlined),

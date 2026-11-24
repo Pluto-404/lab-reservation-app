@@ -59,7 +59,9 @@ class BookingValidator {
 
   /// Jadwal yang mengunci slot (tidak bisa dipesan orang lain).
   static bool isBlocking(ReservationModel r) =>
-      r.status == 'approved' || r.status == 'maintenance_block';
+      r.status == 'approved' ||
+      r.status == 'maintenance_block' ||
+      r.type == 'maintenance_block';
 
   static ReservationModel? findBlockingConflict({
     required DateTime start,

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/laboratory_model.dart';
 import '../models/reservation_model.dart';
 
@@ -93,6 +94,12 @@ Future<void> deleteLaboratory(String labId) async {
 
       final existing = ReservationModel.fromFirestore(doc);
 
+      // Pastikan jadwal ini berstatus approved atau bertipe maintenance_block
+      final bool isBlocking = existing.status == 'approved' ||
+          existing.status == 'maintenance_block' ||
+          existing.type == 'maintenance_block';
+      if (!isBlocking) continue;
+
       // Rumus bentrok rentang waktu
       final bool isOverlapping =
           startTime.isBefore(existing.endTime) && endTime.isAfter(existing.startTime);
@@ -106,7 +113,8 @@ Future<void> deleteLaboratory(String labId) async {
   }
 
   /// Pengajuan reservasi baru oleh mahasiswa (dengan pencegahan bentrok otomatis)
-  Future<void> createReservation(ReservationModel reservation) async {
+  /// Mengembalikan ID dokumen reservasi yang baru dibuat.
+  Future<String> createReservation(ReservationModel reservation) async {
     // 1. Cek apakah ada jadwal bentrok terlebih dahulu
     final bool isConflict = await checkScheduleConflict(
       labId: reservation.labId,
@@ -143,18 +151,22 @@ Future<void> deleteLaboratory(String labId) async {
     );
 
     await docRef.set(newReservation.toMap());
+    return docRef.id;
   }
 
-  /// Stream riwayat reservasi mandiri milik mahasiswa yang sedang login
+  /// Stream riwayat reservasi mandiri milik mahasiswa yang sedang login.
+  /// Diurutkan di sisi klien/memori agar tidak memerlukan composite index tambahan di Firestore.
   Stream<List<ReservationModel>> getMyReservations(String userId) {
+    if (userId.isEmpty) return Stream.value(const <ReservationModel>[]);
     return _reservationsRef
         .where('user_id', isEqualTo: userId)
-        .orderBy('created_at', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
+      final list = snapshot.docs
           .map((doc) => ReservationModel.fromFirestore(doc))
           .toList();
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
     });
   }
 
@@ -197,10 +209,31 @@ Future<void> deleteLaboratory(String labId) async {
   }
 
   /// Menyetujui pengajuan peminjaman (Admin)
+  /// Memeriksa apakah terjadi bentrok sebelum persetujuan disimpan.
   Future<void> approveReservation({
     required String reservationId,
     required String adminId,
   }) async {
+    final doc = await _reservationsRef.doc(reservationId).get();
+    if (!doc.exists) {
+      throw Exception('Data reservasi tidak ditemukan.');
+    }
+    final booking = ReservationModel.fromFirestore(doc);
+
+    // Cek apakah ada jadwal lain yang bertabrakan sebelum menyetujui
+    final bool isConflict = await checkScheduleConflict(
+      labId: booking.labId,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      excludeReservationId: reservationId,
+    );
+
+    if (isConflict) {
+      throw Exception(
+        'Tidak dapat menyetujui: Jadwal ini bertabrakan dengan jadwal lain yang sudah disetujui atau pemeliharaan lab.',
+      );
+    }
+
     await _reservationsRef.doc(reservationId).update({
       'status': 'approved',
       'admin_id': adminId,
@@ -220,10 +253,34 @@ Future<void> deleteLaboratory(String labId) async {
     });
   }
 
-  /// Pembatalan reservasi mandiri oleh mahasiswa sebelum jadwal berlangsung
-  Future<void> cancelReservation(String reservationId) async {
-    await _reservationsRef.doc(reservationId).update({
-      'status': 'cancelled',
+  /// Pembatalan reservasi mandiri oleh mahasiswa sebelum jadwal berlangsung.
+  /// Menjalankan transaksi dan validasi keamanan.
+  Future<void> cancelReservation({
+    required String reservationId,
+    required String userId,
+  }) async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (reservationId.isEmpty || userId.isEmpty || currentUid != userId) {
+      throw StateError('Data pemesanan tidak valid atau otentikasi tidak sesuai.');
+    }
+
+    final docRef = _reservationsRef.doc(reservationId);
+    await _firestore.runTransaction((transaction) async {
+      final doc = await transaction.get(docRef);
+      if (!doc.exists) {
+        throw StateError('Pemesanan tidak ditemukan.');
+      }
+      final booking = ReservationModel.fromFirestore(doc);
+      if (booking.userId != userId || booking.type != 'student_booking') {
+        throw StateError('Kamu tidak dapat membatalkan pemesanan ini.');
+      }
+      if (booking.status != 'pending' && booking.status != 'approved') {
+        throw StateError('Status pemesanan tidak dapat dibatalkan.');
+      }
+      if (!booking.startTime.isAfter(DateTime.now())) {
+        throw StateError('Pemesanan yang sudah dimulai tidak bisa dibatalkan.');
+      }
+      transaction.update(docRef, {'status': 'cancelled'});
     });
   }
 

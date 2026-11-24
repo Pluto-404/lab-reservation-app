@@ -28,6 +28,8 @@ class _WalkInPageState extends State<WalkInPage> {
   final _purposeController = TextEditingController();
 
   final FirestoreService _firestoreService = FirestoreService();
+  late final Stream<List<LaboratoryModel>> _laboratoriesStream;
+  late final Stream<List<ReservationModel>> _reservationsStream;
 
   String? _selectedLaboratoryId;
   DateTime _selectedDate = DateTime.now();
@@ -35,6 +37,13 @@ class _WalkInPageState extends State<WalkInPage> {
   TimeOfDay _endTime = const TimeOfDay(hour: 10, minute: 0);
 
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _laboratoriesStream = _firestoreService.getActiveLaboratories();
+    _reservationsStream = _firestoreService.getAllReservations();
+  }
 
   @override
   void dispose() {
@@ -181,7 +190,7 @@ class _WalkInPageState extends State<WalkInPage> {
         createdAt: DateTime.now(),
       );
 
-      await _firestoreService.createReservation(reservation);
+      final reservationId = await _firestoreService.createReservation(reservation);
 
       if (!mounted) return;
 
@@ -197,8 +206,8 @@ class _WalkInPageState extends State<WalkInPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Peminjaman langsung berhasil disimpan.'),
+        SnackBar(
+          content: Text('Peminjaman langsung berhasil disimpan ($reservationId).'),
           backgroundColor: AppTheme.success,
         ),
       );
@@ -225,7 +234,7 @@ class _WalkInPageState extends State<WalkInPage> {
   @override
   Widget build(BuildContext context) {
     final bodyContent = StreamBuilder<List<LaboratoryModel>>(
-      stream: _firestoreService.getActiveLaboratories(),
+      stream: _laboratoriesStream,
       builder: (context, labSnapshot) {
         if (labSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -477,7 +486,7 @@ class _WalkInPageState extends State<WalkInPage> {
             const SizedBox(height: 12),
 
             StreamBuilder<List<ReservationModel>>(
-              stream: _firestoreService.getAllReservations(),
+              stream: _reservationsStream,
               builder: (context, reservationSnapshot) {
                 if (reservationSnapshot.connectionState ==
                     ConnectionState.waiting) {

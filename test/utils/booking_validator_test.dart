@@ -42,6 +42,52 @@ void main() {
   DateTime at(int h, [int m = 0]) =>
       DateTime(day.year, day.month, day.day, h, m);
 
+  group('BookingValidator.isBlocking', () {
+    test('mengunci slot jika status approved, status maintenance_block, atau type maintenance_block', () {
+      expect(
+        BookingValidator.isBlocking(
+          reservation(status: 'approved', start: at(8), end: at(10)),
+        ),
+        isTrue,
+      );
+      expect(
+        BookingValidator.isBlocking(
+          reservation(status: 'maintenance_block', start: at(8), end: at(10)),
+        ),
+        isTrue,
+      );
+      expect(
+        BookingValidator.isBlocking(
+          reservation(
+            status: 'other',
+            type: 'maintenance_block',
+            start: at(8),
+            end: at(10),
+          ),
+        ),
+        isTrue,
+      );
+      expect(
+        BookingValidator.isBlocking(
+          reservation(status: 'pending', start: at(8), end: at(10)),
+        ),
+        isFalse,
+      );
+      expect(
+        BookingValidator.isBlocking(
+          reservation(status: 'rejected', start: at(8), end: at(10)),
+        ),
+        isFalse,
+      );
+      expect(
+        BookingValidator.isBlocking(
+          reservation(status: 'cancelled', start: at(8), end: at(10)),
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('OperationalHours.parse', () {
     test('membaca "08:00 - 16:00"', () {
       final h = OperationalHours.parse('08:00 - 16:00');

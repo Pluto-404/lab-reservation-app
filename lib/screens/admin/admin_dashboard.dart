@@ -29,6 +29,15 @@ class AdminDashboard extends StatefulWidget {
 class _AdminDashboardState extends State<AdminDashboard> {
   late int _selectedTab = widget.initialTab;
   final FirestoreService _firestoreService = FirestoreService();
+  late final Stream<List<LaboratoryModel>> _laboratoriesStream;
+  late final Stream<List<ReservationModel>> _reservationsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _laboratoriesStream = _firestoreService.getAllLaboratories();
+    _reservationsStream = _firestoreService.getAllReservations();
+  }
 
   Future<void> _confirmSignOut() async {
     final confirmed = await showDialog<bool>(
@@ -67,7 +76,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
         final tabs = [
           _AdminOverviewView(
-            firestoreService: _firestoreService,
+            laboratoriesStream: _laboratoriesStream,
+            reservationsStream: _reservationsStream,
             onSelectTab: (index) => setState(() => _selectedTab = index),
           ),
           const LaboratoryManagementPage(showAppBar: false),
@@ -180,11 +190,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
 class _AdminOverviewView extends StatelessWidget {
   const _AdminOverviewView({
-    required this.firestoreService,
+    required this.laboratoriesStream,
+    required this.reservationsStream,
     required this.onSelectTab,
   });
 
-  final FirestoreService firestoreService;
+  final Stream<List<LaboratoryModel>> laboratoriesStream;
+  final Stream<List<ReservationModel>> reservationsStream;
   final ValueChanged<int> onSelectTab;
 
   String _formatDate(DateTime date) {
@@ -216,7 +228,7 @@ class _AdminOverviewView extends StatelessWidget {
     return PageWidth(
       maxWidth: 850,
       child: StreamBuilder<List<LaboratoryModel>>(
-        stream: firestoreService.getAllLaboratories(),
+        stream: laboratoriesStream,
         builder: (context, labSnapshot) {
           if (labSnapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -238,7 +250,7 @@ class _AdminOverviewView extends StatelessWidget {
           final laboratories = labSnapshot.data ?? [];
 
           return StreamBuilder<List<ReservationModel>>(
-            stream: firestoreService.getAllReservations(),
+            stream: reservationsStream,
             builder: (context, reservationSnapshot) {
               if (reservationSnapshot.connectionState ==
                   ConnectionState.waiting) {

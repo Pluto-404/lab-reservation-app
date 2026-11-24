@@ -22,8 +22,16 @@ class BookingApprovalPage extends StatefulWidget {
 
 class _BookingApprovalPageState extends State<BookingApprovalPage> {
   final FirestoreService _firestoreService = FirestoreService();
+  late final Stream<List<ReservationModel>> _reservationsStream;
 
   String _selectedFilter = 'Semua';
+  final Set<String> _processingIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _reservationsStream = _firestoreService.getAllReservations();
+  }
 
   String _displayStatus(String status) {
     switch (status) {
@@ -70,66 +78,15 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
     return '$hour.$minute';
   }
 
-  Future<String?> _askRejectionReason() async {
-    final controller = TextEditingController();
-
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Alasan Penolakan'),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Masukkan alasan penolakan...',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final value = controller.text.trim();
-
-              if (value.isEmpty) {
-                ScaffoldMessenger.of(dialogContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Alasan penolakan wajib diisi.'),
-                  ),
-                );
-                return;
-              }
-
-              Navigator.pop(dialogContext, value);
-            },
-            child: const Text('Lanjutkan'),
-          ),
-        ],
-      ),
-    );
-
-    controller.dispose();
-    return reason;
-  }
-
-  Future<void> _confirmAction(
-    ReservationModel booking,
-    String status,
-  ) async {
-    final isApprove = status == 'approved';
+  Future<void> _approveBooking(ReservationModel booking) async {
+    if (_processingIds.contains(booking.reservationId)) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
-          isApprove ? 'Setujui Peminjaman?' : 'Tolak Peminjaman?',
-        ),
+        title: const Text('Setujui Peminjaman?'),
         content: Text(
-          'Apakah kamu yakin ingin '
-          '${isApprove ? 'menyetujui' : 'menolak'} '
-          'pengajuan dari ${booking.studentName}?',
+          'Apakah kamu yakin ingin menyetujui pengajuan dari ${booking.studentName}?',
         ),
         actions: [
           TextButton(
@@ -138,27 +95,21 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor:
-                  isApprove ? AppTheme.success : AppTheme.danger,
+              backgroundColor: AppTheme.success,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(isApprove ? 'Setujui' : 'Tolak'),
+            child: const Text('Setujui'),
           ),
         ],
       ),
     );
 
     if (confirmed != true || !mounted) return;
+    if (_processingIds.contains(booking.reservationId)) return;
 
-    String? rejectionReason;
-
-    if (!isApprove) {
-      rejectionReason = await _askRejectionReason();
-
-      if (rejectionReason == null || rejectionReason.trim().isEmpty) {
-        return;
-      }
-    }
+    setState(() {
+      _processingIds.add(booking.reservationId);
+    });
 
     try {
       final adminId = FirebaseAuth.instance.currentUser?.uid;
@@ -167,26 +118,17 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
         throw Exception('Akun Admin belum login.');
       }
 
-      if (isApprove) {
-        await _firestoreService.approveReservation(
-          reservationId: booking.reservationId,
-          adminId: adminId,
-        );
-      } else {
-        await _firestoreService.rejectReservation(
-          reservationId: booking.reservationId,
-          adminId: adminId,
-          rejectionReason: rejectionReason!,
-        );
-      }
+      await _firestoreService.approveReservation(
+        reservationId: booking.reservationId,
+        adminId: adminId,
+      );
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Pengajuan ${booking.reservationId} berhasil '
-            '${isApprove ? 'disetujui' : 'ditolak'}.',
+            'Pengajuan ${booking.reservationId} berhasil disetujui.',
           ),
         ),
       );
@@ -199,13 +141,76 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
           backgroundColor: AppTheme.danger,
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _processingIds.remove(booking.reservationId);
+        });
+      }
+    }
+  }
+
+  Future<void> _rejectBooking(ReservationModel booking) async {
+    if (_processingIds.contains(booking.reservationId)) return;
+
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => RejectReservationDialog(
+        studentName: booking.studentName,
+      ),
+    );
+
+    if (reason == null || reason.trim().isEmpty || !mounted) return;
+    if (_processingIds.contains(booking.reservationId)) return;
+
+    setState(() {
+      _processingIds.add(booking.reservationId);
+    });
+
+    try {
+      final adminId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (adminId == null) {
+        throw Exception('Akun Admin belum login.');
+      }
+
+      await _firestoreService.rejectReservation(
+        reservationId: booking.reservationId,
+        adminId: adminId,
+        rejectionReason: reason.trim(),
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Pengajuan ${booking.reservationId} berhasil ditolak.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memperbarui pengajuan: $e'),
+          backgroundColor: AppTheme.danger,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _processingIds.remove(booking.reservationId);
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final bodyContent = StreamBuilder<List<ReservationModel>>(
-      stream: _firestoreService.getAllReservations(),
+      stream: _reservationsStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -356,11 +361,14 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
             else
               ...bookings.map(
                 (booking) => _BookingCard(
+                  key: ValueKey(booking.reservationId),
                   booking: booking,
                   formatDate: _formatDate,
                   formatTime: _formatTime,
-                  onApprove: () => _confirmAction(booking, 'approved'),
-                  onReject: () => _confirmAction(booking, 'rejected'),
+                  isProcessing:
+                      _processingIds.contains(booking.reservationId),
+                  onApprove: () => _approveBooking(booking),
+                  onReject: () => _rejectBooking(booking),
                 ),
               ),
           ],
@@ -381,19 +389,22 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
   }
 }
 
-class _BookingCard extends StatelessWidget {
+class BookingApprovalCard extends StatelessWidget {
   final ReservationModel booking;
   final String Function(DateTime) formatDate;
   final String Function(DateTime) formatTime;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final bool isProcessing;
 
-  const _BookingCard({
+  const BookingApprovalCard({
+    super.key,
     required this.booking,
     required this.formatDate,
     required this.formatTime,
     required this.onApprove,
     required this.onReject,
+    this.isProcessing = false,
   });
 
   @override
@@ -490,33 +501,59 @@ class _BookingCard extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 14),
                   child: Divider(height: 1, color: AppTheme.outline),
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: onReject,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.danger,
-                          side: const BorderSide(color: AppTheme.danger),
-                        ),
-                        icon: const Icon(Icons.close, size: 18),
-                        label: const Text('Tolak'),
+                if (isProcessing)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Memproses pembaruan...',
+                            style: TextStyle(
+                              color: AppTheme.muted,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: onApprove,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.success,
-                          foregroundColor: Colors.white,
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: onReject,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.danger,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.close, size: 18),
+                          label: const Text('Tolak'),
                         ),
-                        icon: const Icon(Icons.check, size: 18),
-                        label: const Text('Setujui'),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: onApprove,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.success,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.check, size: 18),
+                          label: const Text('Setujui'),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ],
           ),
@@ -525,6 +562,8 @@ class _BookingCard extends StatelessWidget {
     );
   }
 }
+
+typedef _BookingCard = BookingApprovalCard;
 
 class _InfoItem extends StatelessWidget {
   final IconData icon;
@@ -558,6 +597,98 @@ class _InfoItem extends StatelessWidget {
               color: textColor ?? AppTheme.muted,
             ),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class RejectReservationDialog extends StatefulWidget {
+  final String studentName;
+
+  const RejectReservationDialog({
+    super.key,
+    required this.studentName,
+  });
+
+  @override
+  State<RejectReservationDialog> createState() =>
+      _RejectReservationDialogState();
+}
+
+class _RejectReservationDialogState extends State<RejectReservationDialog> {
+  late final TextEditingController _controller;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final value = _controller.text.trim();
+    if (value.isEmpty) {
+      setState(() {
+        _errorMessage = 'Alasan penolakan wajib diisi.';
+      });
+      return;
+    }
+    Navigator.pop(context, value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Tolak Peminjaman'),
+      content: SizedBox(
+        width: 400,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Masukkan alasan penolakan untuk pengajuan dari ${widget.studentName}:',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              maxLines: 3,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Masukkan alasan penolakan...',
+                errorText: _errorMessage,
+              ),
+              onChanged: (text) {
+                if (_errorMessage != null && text.trim().isNotEmpty) {
+                  setState(() {
+                    _errorMessage = null;
+                  });
+                }
+              },
+              onSubmitted: (_) => _submit(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Batal'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppTheme.danger,
+          ),
+          onPressed: _submit,
+          child: const Text('Tolak'),
         ),
       ],
     );

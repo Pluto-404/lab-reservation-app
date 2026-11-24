@@ -24,8 +24,15 @@ class _LaboratoryManagementPageState
     extends State<LaboratoryManagementPage> {
   final TextEditingController _searchController = TextEditingController();
   final FirestoreService _firestoreService = FirestoreService();
+  late final Stream<List<LaboratoryModel>> _laboratoriesStream;
 
   String _selectedFilter = 'Semua';
+
+  @override
+  void initState() {
+    super.initState();
+    _laboratoriesStream = _firestoreService.getAllLaboratories();
+  }
 
   List<LaboratoryModel> _filterLaboratories(
     List<LaboratoryModel> laboratories,
@@ -149,7 +156,7 @@ class _LaboratoryManagementPageState
   @override
   Widget build(BuildContext context) {
     final bodyContent = StreamBuilder<List<LaboratoryModel>>(
-      stream: _firestoreService.getAllLaboratories(),
+      stream: _laboratoriesStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
