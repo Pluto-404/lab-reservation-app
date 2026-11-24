@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/laboratory_model.dart';
 import '../models/reservation_model.dart';
@@ -64,4 +65,34 @@ class BookingService {
           ),
         );
   }
+  /// Batalkan hanya reservasi milik pengguna, sebelum waktu mulai.
+  /// Transaksi mencegah pembatalan status yang sudah berubah saat diproses.
+  /// Firestore Security Rules tetap wajib membatasi update di sisi server.
+  Future<void> cancelMyReservation({
+    required String reservationId,
+    required String userId,
+  }) async {
+    if (reservationId.isEmpty ||
+        userId.isEmpty ||
+        FirebaseAuth.instance.currentUser?.uid != userId) {
+      throw StateError('Data pemesanan tidak valid.');
+    }
+    final ref = FirebaseFirestore.instance.collection('reservations').doc(reservationId);
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final doc = await transaction.get(ref);
+      if (!doc.exists) throw StateError('Pemesanan tidak ditemukan.');
+      final booking = ReservationModel.fromFirestore(doc);
+      if (booking.userId != userId || booking.type != 'student_booking') {
+        throw StateError('Kamu tidak dapat membatalkan pemesanan ini.');
+      }
+      if (booking.status != 'pending' && booking.status != 'approved') {
+        throw StateError('Status pemesanan tidak dapat dibatalkan.');
+      }
+      if (!booking.startTime.isAfter(DateTime.now())) {
+        throw StateError('Pemesanan yang sudah dimulai tidak bisa dibatalkan.');
+      }
+      transaction.update(ref, {'status': 'cancelled'});
+    });
+  }
+
 }

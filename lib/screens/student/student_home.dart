@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../app_theme.dart';
 import '../../models/user_model.dart';
 import 'laboratory_catalog_page.dart';
+import 'booking/reservation_history_page.dart';
 import 'schedule/student_schedule_page.dart';
 import 'student_dashboard.dart';
 import 'student_profile_page.dart';
@@ -23,9 +24,11 @@ class _StudentHomeState extends State<StudentHome> {
       ? _profileTab
       : 0;
   bool _scheduleOpened = false;
+  bool _reservationsOpened = false;
 
   static const int _scheduleTab = 2;
-  static const int _profileTab = 3;
+  static const int _reservationsTab = 3;
+  static const int _profileTab = 4;
   late UserModel profile = widget.profile;
 
   @override
@@ -89,6 +92,10 @@ class _StudentHomeState extends State<StudentHome> {
                 )
               else
                 const SizedBox.shrink(),
+              if (_reservationsOpened || selected == _reservationsTab)
+                ReservationHistoryPage(userId: profile.uid)
+              else
+                const SizedBox.shrink(),
               StudentProfile(
                 profile: profile,
                 onUpdated: (updated) => setState(() => profile = updated),
@@ -101,6 +108,7 @@ class _StudentHomeState extends State<StudentHome> {
           onDestinationSelected: (i) => setState(() {
             selected = i;
             if (i == _scheduleTab) _scheduleOpened = true;
+            if (i == _reservationsTab) _reservationsOpened = true;
           }),
           destinations: const [
             NavigationDestination(
@@ -117,6 +125,11 @@ class _StudentHomeState extends State<StudentHome> {
               icon: Icon(Icons.calendar_month_outlined),
               selectedIcon: Icon(Icons.calendar_month),
               label: 'Kalender',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long_outlined),
+              selectedIcon: Icon(Icons.receipt_long),
+              label: 'Pesanan',
             ),
             NavigationDestination(
               icon: Icon(Icons.person_outline),

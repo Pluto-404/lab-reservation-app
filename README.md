@@ -1,4 +1,4 @@
-# 🔬 LabBook — Campus Laboratory Reservation App
+﻿# ðŸ”¬ LabBook â€” Campus Laboratory Reservation App
 
 [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
@@ -9,7 +9,7 @@ Aplikasi mobile berbasis **Flutter** untuk memfasilitasi peminjaman dan reservas
 
 ---
 
-## 🔍 Identifikasi Masalah & Solusi
+## ðŸ” Identifikasi Masalah & Solusi
 
 ### A. Identifikasi Masalah
 
@@ -33,7 +33,7 @@ Solusi yang ditawarkan meliputi:
 
 ---
 
-## 🚀 Fitur yang Dikembangkan
+## ðŸš€ Fitur yang Dikembangkan
 
 Aplikasi LabBook memiliki dua jenis pengguna, yaitu Mahasiswa (Student) dan Admin/Asisten Laboratorium.
 
@@ -59,7 +59,7 @@ Aplikasi LabBook memiliki dua jenis pengguna, yaitu Mahasiswa (Student) dan Admi
 7. **Riwayat dan Laporan:** Mengelola seluruh data reservasi serta melihat riwayat penggunaan laboratorium.
 ---
 
-## 🛠️ Arsitektur Teknologi & Database
+## ðŸ› ï¸ Arsitektur Teknologi & Database
 
 ### Tech Stack
 - **Framework:** Flutter (Channel Stable)
@@ -72,13 +72,13 @@ Aplikasi LabBook memiliki dua jenis pengguna, yaitu Mahasiswa (Student) dan Admi
 
 ### Skema Cloud Firestore
 Aplikasi mengelola 3 koleksi data utama:
-1. `users` — Data profil mahasiswa dan akun admin/asisten lab (`uid`, `name`, `nim`, `class_name`, `cohort`, `role`).
-2. `laboratories` — Informasi ruangan lab (`lab_id`, `name`, `building`, `capacity`, `facilities`, `operational_hours`, `is_active`).
-3. `reservations` — Data transaksi peminjaman & blokir jadwal (`reservation_id`, `lab_id`, `user_id`, `start_time`, `end_time`, `status`, `rejection_reason`, `admin_id`).
+1. `users` â€” Data profil mahasiswa dan akun admin/asisten lab (`uid`, `name`, `nim`, `class_name`, `cohort`, `role`).
+2. `laboratories` â€” Informasi ruangan lab (`lab_id`, `name`, `building`, `capacity`, `facilities`, `operational_hours`, `is_active`).
+3. `reservations` â€” Data transaksi peminjaman & blokir jadwal (`reservation_id`, `lab_id`, `user_id`, `start_time`, `end_time`, `status`, `rejection_reason`, `admin_id`).
 
 ---
 
-## 🎨 Rancangan Antarmuka Aplikasi
+## ðŸŽ¨ Rancangan Antarmuka Aplikasi
 
 Antarmuka LabBook menggunakan tampilan sederhana dan responsif agar mahasiswa mudah mengakses informasi laboratorium, mengelola profil, dan mengajukan reservasi. Berikut dokumentasi tampilan aplikasi.
 
@@ -124,9 +124,28 @@ Menampilkan formulir pengajuan reservasi untuk mengisi tanggal, rentang waktu, d
 
 ![Form Reservasi](screenshots/06-form-reservasi.png)
 
+
+### G. Halaman Pesanan Mahasiswa
+
+Halaman Pesanan menampilkan riwayat pengajuan reservasi laboratorium beserta statusnya secara real-time. Mahasiswa dapat memfilter pesanan berdasarkan status pengajuan.
+
+[![Halaman Pesanan Mahasiswa](screenshots/07-pesanan.jpeg)](screenshots/07-pesanan.jpeg)
+
+### H. Detail Pesanan dan Alasan Penolakan
+
+Menampilkan informasi lengkap reservasi, termasuk laboratorium, kegiatan, keperluan, tanggal, waktu, dan jumlah peserta. Apabila pengajuan ditolak, mahasiswa dapat melihat alasan penolakan dari admin.
+
+[![Detail Pesanan dan Alasan Penolakan](screenshots/08-detail-pesanan.jpeg)](screenshots/08-detail-pesanan.jpeg)
+
+### I. Konfirmasi Pembatalan
+
+Menampilkan dialog konfirmasi sebelum mahasiswa membatalkan reservasi yang masih memenuhi ketentuan pembatalan.
+
+[![Konfirmasi Pembatalan](screenshots/09-konfirmasi-pembatalan.jpeg)](screenshots/09-konfirmasi-pembatalan.jpeg)
+
 ---
 
-## 🗄️ Perancangan Struktur Data Cloud Firestore
+## ðŸ—„ï¸ Perancangan Struktur Data Cloud Firestore
 
 LabBook menggunakan **Cloud Firestore** sebagai database NoSQL untuk menyimpan data pengguna, informasi laboratorium, dan reservasi.
 
@@ -196,7 +215,7 @@ Dengan struktur tersebut, sistem dapat mengelola data pengguna, laboratorium, da
 
 ---
 
-## 👥 Anggota Kelompok & Pembagian Tugas
+## ðŸ‘¥ Anggota Kelompok & Pembagian Tugas
 
 | No | Nama Mahasiswa | NIM | Username GitHub | Peran & Tanggung Jawab Utama |
 |:--:|---|:---:|:---:|---|
@@ -206,7 +225,7 @@ Dengan struktur tersebut, sistem dapat mengelola data pengguna, laboratorium, da
 | 4 | **Ghali Shiddiq Fatullah** | NIM K3524054 | [@ghaliishiddiq12](https://github.com/ghaliishiddiq12/) | **Admin & Management Lead** |
 
 
-## 💻 Panduan Instalasi & Menjalankan Proyek
+## ðŸ’» Panduan Instalasi & Menjalankan Proyek
 
 Bagi anggota kelompok yang ingin menjalankan proyek ini di perangkat lokal:
 
@@ -241,11 +260,11 @@ flutter run
 
 ---
 
-## 📅 Roadmap Perkembangan Proyek (4 Minggu)
+## ðŸ“… Roadmap Perkembangan Proyek (4 Minggu)
 
 Jadwal kerja proyek LabBook dibagi menjadi 4 minggu dengan pembagian tugas dan target commit GitHub untuk setiap anggota kelompok.
 
-### Minggu 1 – Persiapan dan Perancangan
+### Minggu 1 â€“ Persiapan dan Perancangan
 
 | Anggota | Tugas Pokok | Target Commit GitHub |
 |---|---|---|
@@ -254,7 +273,7 @@ Jadwal kerja proyek LabBook dibagi menjadi 4 minggu dengan pembagian tugas dan t
 | Muhammad Raihan Faza | Inisialisasi proyek Flutter, wireframe kalender dan form booking. | `chore: inisialisasi flutter dan struktur navigasi awal` |
 | Ghali Shiddiq Fatullah | Membuat wireframe UI Admin, Dashboard dan laporan pengumpulan SPADA Minggu 1. | `docs: panduan kontribusi dan mockup admin dashboard` |
 
-### Minggu 2 – Implementasi Fitur Dasar
+### Minggu 2 â€“ Implementasi Fitur Dasar
 
 | Anggota | Tugas Pokok | Target Commit GitHub |
 |---|---|---|
@@ -263,7 +282,7 @@ Jadwal kerja proyek LabBook dibagi menjadi 4 minggu dengan pembagian tugas dan t
 | Muhammad Raihan Faza | Implementasi navigasi BottomBar dan integrasi kalender mingguan. | `feat(calendar): implementasi antarmuka kalender mingguan` |
 | Ghali Shiddiq Fatullah | Implementasi Dashboard Admin dan form Tambah/Edit Lab (CRUD Lab). | `feat(admin): antarmuka kelola lab dan integrasi crud` |
 
-### Minggu 3 – Implementasi Fitur Lanjutan
+### Minggu 3 â€“ Implementasi Fitur Lanjutan
 
 | Anggota | Tugas Pokok | Target Commit GitHub |
 |---|---|---|
@@ -272,7 +291,7 @@ Jadwal kerja proyek LabBook dibagi menjadi 4 minggu dengan pembagian tugas dan t
 | Muhammad Raihan Faza | Membuat form pengajuan booking dan logika validasi jadwal bentrok. | `feat(booking): form booking dan validasi jadwal bentrok` |
 | Ghali Shiddiq Fatullah | Membuat Pusat Persetujuan (Approval Center) untuk menyetujui dan menolak booking. | `feat(admin): sistem approval dan penolakan booking` |
 
-### Minggu 4 – Pengujian dan Finalisasi
+### Minggu 4 â€“ Pengujian dan Finalisasi
 
 | Anggota | Tugas Pokok | Target Commit GitHub |
 |---|---|---|
@@ -283,7 +302,7 @@ Jadwal kerja proyek LabBook dibagi menjadi 4 minggu dengan pembagian tugas dan t
 
 ---
 
-## 🎥 Rencana Demonstrasi Aplikasi
+## ðŸŽ¥ Rencana Demonstrasi Aplikasi
 
 Demonstrasi dilakukan untuk memperlihatkan cara kerja aplikasi LabBook, mulai dari proses login mahasiswa hingga pengelolaan reservasi oleh admin.
 
@@ -333,7 +352,7 @@ Demonstrasi diakhiri dengan penyampaian kesimpulan mengenai fungsi aplikasi LabB
 
 ---
 
-## 📄 Dokumen Terkait
+## ðŸ“„ Dokumen Terkait
 - [Panduan dan Ketentuan Resmi Proyek](PANDUAN_PROYEK.md)
 - [Dokumen Perancangan Teknis & Skema Database](DOKUMEN_PERANCANGAN_LABBOOK.md)
 
