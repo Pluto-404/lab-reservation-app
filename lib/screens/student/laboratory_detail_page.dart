@@ -10,7 +10,7 @@ class LaboratoryDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Detail laboratorium')),
+        appBar: AppBar(title: const Text('Detail Laboratorium')),
         body: SafeArea(
           child: PageWidth(
             maxWidth: 680,

@@ -157,7 +157,7 @@ class _LaboratoryFormPageState extends State<LaboratoryFormPage> {
                 _buildField(
                   controller: _hoursController,
                   label: 'Jam Operasional',
-                  hint: 'Contoh: 08.00 - 16.00',
+                  hint: 'Contoh: 08:00 - 16:00',
                   icon: Icons.access_time,
                 ),
                 const SizedBox(height: 22),

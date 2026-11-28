@@ -245,4 +245,22 @@ void main() {
       );
     });
   });
+
+  group('generateWeeklySlots', () {
+    test('menghasilkan slot mingguan dengan jam lokal yang konsisten', () {
+      final slots = BookingValidator.generateWeeklySlots(
+        firstStart: DateTime(2026, 11, 28, 8, 30),
+        firstEnd: DateTime(2026, 11, 28, 10, 30),
+        weeks: 3,
+      );
+
+      expect(slots.length, 3);
+      expect(slots[0].start, DateTime(2026, 11, 28, 8, 30));
+      expect(slots[0].end, DateTime(2026, 11, 28, 10, 30));
+      expect(slots[1].start, DateTime(2026, 12, 5, 8, 30));
+      expect(slots[1].end, DateTime(2026, 12, 5, 10, 30));
+      expect(slots[2].start, DateTime(2026, 12, 12, 8, 30));
+      expect(slots[2].end, DateTime(2026, 12, 12, 10, 30));
+    });
+  });
 }

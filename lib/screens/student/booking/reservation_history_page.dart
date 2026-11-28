@@ -55,7 +55,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
   }
 
   static String _time(DateTime value) =>
-      '${value.hour.toString().padLeft(2, '0')}.${value.minute.toString().padLeft(2, '0')}';
+      '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 
   bool _canCancel(ReservationModel booking) =>
       booking.userId == widget.userId &&
@@ -79,7 +79,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
             Icon(Icons.receipt_long_outlined, color: AppTheme.deep, size: 23),
             SizedBox(width: 10),
             Expanded(
-              child: Text('Detail pesanan', style: TextStyle(fontSize: 20)),
+              child: Text('Detail Pesanan', style: TextStyle(fontSize: 20)),
             ),
           ],
         ),
@@ -319,7 +319,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 26),
         children: [
           const Text(
-            'Pesanan saya',
+            'Pesanan Saya',
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
@@ -438,7 +438,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${_date(booking.startTime)}  ·  ${_time(booking.startTime)}–${_time(booking.endTime)}',
+                    '${_date(booking.startTime)} · ${_time(booking.startTime)}–${_time(booking.endTime)}',
                     style: const TextStyle(fontSize: 12),
                   ),
                 ),

@@ -485,7 +485,7 @@ class _LaboratoryCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     laboratory.operationalHours.isEmpty
-                        ? '08.00 - 16.00'
+                        ? '08:00 - 16:00'
                         : laboratory.operationalHours,
                     style: const TextStyle(
                       fontSize: 13,

@@ -20,4 +20,6 @@ abstract class AppRoutes {
   static const String adminApprovals = '/admin/approvals';
   static const String adminManageLabs = '/admin/manage-labs';
   static const String adminWalkIn = '/admin/walk-in';
+  static const String adminScheduleBlock = '/admin/schedule-block';
+  static const String adminReports = '/admin/reports';
 }

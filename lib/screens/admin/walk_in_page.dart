@@ -5,6 +5,7 @@ import '../../app_theme.dart';
 import '../../models/laboratory_model.dart';
 import '../../models/reservation_model.dart';
 import '../../services/firestore_service.dart';
+import '../../utils/booking_validator.dart';
 import '../../widgets/info_state.dart';
 import '../../widgets/reservation_status_chip.dart';
 
@@ -60,7 +61,7 @@ class _WalkInPageState extends State<WalkInPage> {
   }
 
   String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}.'
+    return '${time.hour.toString().padLeft(2, '0')}:'
         '${time.minute.toString().padLeft(2, '0')}';
   }
 
@@ -164,6 +165,23 @@ class _WalkInPageState extends State<WalkInPage> {
         ),
       );
       return;
+    }
+
+    final hours = OperationalHours.parse(laboratory.operationalHours);
+    if (hours.isDefined) {
+      final startMin = startDateTime.hour * 60 + startDateTime.minute;
+      final endMin = endDateTime.hour * 60 + endDateTime.minute;
+      if (startMin < hours.startMinute || endMin > hours.endMinute) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Jadwal di luar jam operasional laboratorium (${hours.label}).',
+            ),
+            backgroundColor: AppTheme.danger,
+          ),
+        );
+        return;
+      }
     }
 
     setState(() {

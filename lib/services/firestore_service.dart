@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/laboratory_model.dart';
 import '../models/reservation_model.dart';
+import '../utils/booking_validator.dart';
+import '../utils/date_id.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -261,7 +263,7 @@ Future<void> deleteLaboratory(String labId) async {
   }) async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     if (reservationId.isEmpty || userId.isEmpty || currentUid != userId) {
-      throw StateError('Data pemesanan tidak valid atau otentikasi tidak sesuai.');
+      throw StateError('Data pemesanan tidak valid atau autentikasi tidak sesuai.');
     }
 
     final docRef = _reservationsRef.doc(reservationId);
@@ -294,6 +296,17 @@ Future<void> deleteLaboratory(String labId) async {
     required DateTime startTime,
     required DateTime endTime,
   }) async {
+    final bool isConflict = await checkScheduleConflict(
+      labId: labId,
+      startTime: startTime,
+      endTime: endTime,
+    );
+    if (isConflict) {
+      throw Exception(
+        'Slot waktu tersebut bertabrakan dengan jadwal yang sudah disetujui atau diblokir.',
+      );
+    }
+
     final docRef = _reservationsRef.doc();
     final blockReservation = ReservationModel(
       reservationId: docRef.id,
@@ -314,5 +327,120 @@ Future<void> deleteLaboratory(String labId) async {
     );
 
     await docRef.set(blockReservation.toMap());
+  }
+
+  /// Blokir jadwal rutin mingguan untuk kelas reguler atau pemeliharaan (Admin).
+  /// Memeriksa seluruh minggu sebelum menyimpan secara atomik menggunakan batch.
+  Future<int> blockRecurringMaintenanceSchedule({
+    required String labId,
+    required String labName,
+    required String adminId,
+    required String title,
+    required String purpose,
+    required DateTime firstStartTime,
+    required DateTime firstEndTime,
+    required int repeatWeeks,
+  }) async {
+    if (repeatWeeks <= 1) {
+      await blockMaintenanceSchedule(
+        labId: labId,
+        labName: labName,
+        adminId: adminId,
+        title: title,
+        purpose: purpose,
+        startTime: firstStartTime,
+        endTime: firstEndTime,
+      );
+      return 1;
+    }
+
+    final slots = BookingValidator.generateWeeklySlots(
+      firstStart: firstStartTime,
+      firstEnd: firstEndTime,
+      weeks: repeatWeeks,
+    );
+
+    final querySnapshot = await _reservationsRef
+        .where('lab_id', isEqualTo: labId)
+        .where('status', whereIn: ['approved', 'maintenance_block'])
+        .get();
+
+    final existingBlocking = querySnapshot.docs
+        .map((doc) => ReservationModel.fromFirestore(doc))
+        .where(BookingValidator.isBlocking)
+        .toList();
+
+    final conflictingDates = <String>[];
+    for (final slot in slots) {
+      final conflict = BookingValidator.findBlockingConflict(
+        start: slot.start,
+        end: slot.end,
+        labSchedule: existingBlocking,
+      );
+      if (conflict != null) {
+        conflictingDates.add(DateId.short(slot.start));
+      }
+    }
+
+    if (conflictingDates.isNotEmpty) {
+      throw Exception(
+        'Slot waktu bertabrakan dengan jadwal lain pada tanggal: '
+        '${conflictingDates.join(', ')}.',
+      );
+    }
+
+    final batch = _firestore.batch();
+    final now = DateTime.now();
+    for (final slot in slots) {
+      final docRef = _reservationsRef.doc();
+      final blockReservation = ReservationModel(
+        reservationId: docRef.id,
+        labId: labId,
+        labName: labName,
+        userId: adminId,
+        studentName: 'Laboran / Admin',
+        studentNim: '-',
+        studentClass: '-',
+        title: title,
+        purpose: purpose,
+        startTime: slot.start,
+        endTime: slot.end,
+        type: 'maintenance_block',
+        status: 'approved',
+        adminId: adminId,
+        createdAt: now,
+      );
+      batch.set(docRef, blockReservation.toMap());
+    }
+
+    await batch.commit();
+    return slots.length;
+  }
+
+  /// Menghapus blokir jadwal maintenance/kelas reguler (Admin)
+  Future<void> deleteMaintenanceBlock(String reservationId) async {
+    final docRef = _reservationsRef.doc(reservationId);
+    final doc = await docRef.get();
+    if (!doc.exists) {
+      throw Exception('Jadwal blokir tidak ditemukan.');
+    }
+    final existing = ReservationModel.fromFirestore(doc);
+    if (existing.type != 'maintenance_block') {
+      throw Exception(
+        'Hanya jadwal blokir pemeliharaan atau kelas reguler yang dapat dihapus di sini.',
+      );
+    }
+    await docRef.delete();
+  }
+
+  /// Menghapus beberapa blokir jadwal sekaligus secara atomik (Admin)
+  Future<int> deleteMaintenanceBlocks(List<String> reservationIds) async {
+    if (reservationIds.isEmpty) return 0;
+    final batch = _firestore.batch();
+    for (final id in reservationIds) {
+      batch.delete(_reservationsRef.doc(id));
+    }
+    await batch.commit();
+    return reservationIds.length;
   }
 }

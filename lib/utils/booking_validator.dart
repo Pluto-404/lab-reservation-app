@@ -173,4 +173,33 @@ class BookingValidator {
     }
     return null;
   }
+
+  /// Menghasilkan daftar pasangan waktu (start, end) mingguan sebanyak [weeks]
+  /// dengan menjaga jam & menit lokal yang sama setiap minggunya.
+  static List<({DateTime start, DateTime end})> generateWeeklySlots({
+    required DateTime firstStart,
+    required DateTime firstEnd,
+    required int weeks,
+  }) {
+    if (weeks < 1) return const [];
+    return List.generate(weeks, (i) {
+      final offsetDays = 7 * i;
+      return (
+        start: DateTime(
+          firstStart.year,
+          firstStart.month,
+          firstStart.day + offsetDays,
+          firstStart.hour,
+          firstStart.minute,
+        ),
+        end: DateTime(
+          firstEnd.year,
+          firstEnd.month,
+          firstEnd.day + offsetDays,
+          firstEnd.hour,
+          firstEnd.minute,
+        ),
+      );
+    });
+  }
 }

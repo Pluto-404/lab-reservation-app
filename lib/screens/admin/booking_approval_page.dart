@@ -75,7 +75,7 @@ class _BookingApprovalPageState extends State<BookingApprovalPage> {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
 
-    return '$hour.$minute';
+    return '$hour:$minute';
   }
 
   Future<void> _approveBooking(ReservationModel booking) async {
@@ -444,7 +444,12 @@ class BookingApprovalCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'NIM: ${booking.studentNim.isEmpty ? '-' : booking.studentNim}',
+                          [
+                            'NIM: ${booking.studentNim.isEmpty ? '-' : booking.studentNim}',
+                            if (booking.studentClass.isNotEmpty &&
+                                booking.studentClass != '-')
+                              'Kelas: ${booking.studentClass}',
+                          ].join(' • '),
                           style: const TextStyle(
                             color: AppTheme.muted,
                             fontSize: 13,

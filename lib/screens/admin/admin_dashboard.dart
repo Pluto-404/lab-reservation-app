@@ -4,14 +4,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../app_theme.dart';
 import '../../models/laboratory_model.dart';
 import '../../models/reservation_model.dart';
+import '../../routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/info_state.dart';
 import '../../widgets/reservation_status_chip.dart';
 import '../../widgets/summary_stat_card.dart';
+import 'admin_report_page.dart';
 import 'booking_approval_page.dart';
 import 'laboratory_form_page.dart';
 import 'laboratory_management_page.dart';
+import 'schedule_block_page.dart';
 import 'walk_in_page.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -79,10 +82,26 @@ class _AdminDashboardState extends State<AdminDashboard> {
             laboratoriesStream: _laboratoriesStream,
             reservationsStream: _reservationsStream,
             onSelectTab: (index) => setState(() => _selectedTab = index),
+            onOpenScheduleBlock: () {
+              if (isWide) {
+                setState(() => _selectedTab = 4);
+              } else {
+                Navigator.pushNamed(context, AppRoutes.adminScheduleBlock);
+              }
+            },
+            onOpenReports: () {
+              if (isWide) {
+                setState(() => _selectedTab = 5);
+              } else {
+                Navigator.pushNamed(context, AppRoutes.adminReports);
+              }
+            },
           ),
           const LaboratoryManagementPage(showAppBar: false),
           const BookingApprovalPage(showAppBar: false),
           const WalkInPage(showAppBar: false),
+          const ScheduleBlockPage(showAppBar: false),
+          const AdminReportPage(showAppBar: false),
         ];
 
         return Scaffold(
@@ -156,7 +175,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           bottomNavigationBar: isWide
               ? null
               : NavigationBar(
-                  selectedIndex: _selectedTab,
+                  selectedIndex: _selectedTab.clamp(0, 3),
                   onDestinationSelected: (i) =>
                       setState(() => _selectedTab = i),
                   destinations: const [
@@ -193,11 +212,15 @@ class _AdminOverviewView extends StatelessWidget {
     required this.laboratoriesStream,
     required this.reservationsStream,
     required this.onSelectTab,
+    required this.onOpenScheduleBlock,
+    required this.onOpenReports,
   });
 
   final Stream<List<LaboratoryModel>> laboratoriesStream;
   final Stream<List<ReservationModel>> reservationsStream;
   final ValueChanged<int> onSelectTab;
+  final VoidCallback onOpenScheduleBlock;
+  final VoidCallback onOpenReports;
 
   String _formatDate(DateTime date) {
     const months = [
@@ -220,7 +243,7 @@ class _AdminOverviewView extends StatelessWidget {
   String _formatTime(DateTime time) {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour.$minute';
+    return '$hour:$minute';
   }
 
   @override
@@ -439,6 +462,34 @@ class _AdminOverviewView extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                              OutlinedButton.icon(
+                                onPressed: onOpenScheduleBlock,
+                                icon: const Icon(
+                                  Icons.event_busy_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Blokir Jadwal'),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(0, 42),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                ),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: onOpenReports,
+                                icon: const Icon(
+                                  Icons.bar_chart_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Laporan Utilisasi'),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(0, 42),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -606,6 +657,20 @@ class _AdminSidebar extends StatelessWidget {
             title: 'Peminjaman Langsung',
             selected: selectedIndex == 3,
             onTap: () => onDestinationSelected(3),
+          ),
+          _SidebarItem(
+            icon: Icons.event_busy_outlined,
+            selectedIcon: Icons.event_busy,
+            title: 'Blokir Jadwal',
+            selected: selectedIndex == 4,
+            onTap: () => onDestinationSelected(4),
+          ),
+          _SidebarItem(
+            icon: Icons.bar_chart_outlined,
+            selectedIcon: Icons.bar_chart,
+            title: 'Laporan & Utilisasi',
+            selected: selectedIndex == 5,
+            onTap: () => onDestinationSelected(5),
           ),
         ],
       ),

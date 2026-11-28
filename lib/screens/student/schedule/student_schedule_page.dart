@@ -274,7 +274,7 @@ class _StudentSchedulePageState extends State<StudentSchedulePage> {
     final body = _buildBody();
     if (!widget.showAppBar) return body;
     return Scaffold(
-      appBar: AppBar(title: const Text('Jadwal laboratorium')),
+      appBar: AppBar(title: const Text('Jadwal Laboratorium')),
       body: SafeArea(child: PageWidth(maxWidth: 680, child: body)),
     );
   }

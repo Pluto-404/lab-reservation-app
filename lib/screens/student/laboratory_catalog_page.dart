@@ -179,7 +179,7 @@ class _LabCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'Lihat detail  ›',
+                        'Lihat detail ›',
                         style: TextStyle(
                           color: AppTheme.deep,
                           fontSize: 12,

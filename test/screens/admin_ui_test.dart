@@ -137,6 +137,7 @@ void main() {
 
       expect(find.text('RES-001'), findsOneWidget);
       expect(find.text('Siti Rahma'), findsOneWidget);
+      expect(find.text('NIM: M0520001 • Kelas: Informatika A'), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Tolak'), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Setujui'), findsOneWidget);
       expect(find.text('Memproses pembaruan...'), findsNothing);

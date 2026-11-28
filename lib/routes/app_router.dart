@@ -6,8 +6,10 @@ import '../models/laboratory_model.dart';
 import '../models/user_model.dart';
 import '../screens/auth_pages.dart';
 import '../screens/admin/admin_dashboard.dart';
+import '../screens/admin/admin_report_page.dart';
 import '../screens/admin/booking_approval_page.dart';
 import '../screens/admin/laboratory_management_page.dart';
+import '../screens/admin/schedule_block_page.dart';
 import '../screens/admin/walk_in_page.dart';
 import '../screens/student/booking/booking_form_page.dart';
 import '../screens/student/laboratory_detail_page.dart';
@@ -122,6 +124,18 @@ class AppRouter {
       case AppRoutes.adminWalkIn:
         return MaterialPageRoute(
           builder: (_) => const WalkInPage(),
+          settings: settings,
+        );
+
+      case AppRoutes.adminScheduleBlock:
+        return MaterialPageRoute(
+          builder: (_) => const ScheduleBlockPage(),
+          settings: settings,
+        );
+
+      case AppRoutes.adminReports:
+        return MaterialPageRoute(
+          builder: (_) => const AdminReportPage(),
           settings: settings,
         );
 

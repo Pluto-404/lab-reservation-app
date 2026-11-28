@@ -100,7 +100,7 @@ class _StudentProfileState extends State<StudentProfile> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Profil mahasiswa',
+                'Profil Mahasiswa',
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
               ),
               SizedBox(height: compact ? 3 : 7),

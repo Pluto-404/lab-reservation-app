@@ -40,7 +40,7 @@
 5. **Blokir Jadwal (Maintenance / Regular Class Block):**
    - Mengunci slot waktu tertentu di kalender untuk praktikum mata kuliah reguler atau perawatan/pemeliharaan berkala agar tidak bisa di-booking oleh mahasiswa.
 6. **Laporan & Riwayat Penggunaan:**
-   - Riwayat riil riwayat peminjaman untuk evaluasi utilisasi laboratorium kampus.
+   - Riwayat riil peminjaman untuk evaluasi utilisasi laboratorium kampus.
 
 ---
 

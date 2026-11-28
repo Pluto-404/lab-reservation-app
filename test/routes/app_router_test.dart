@@ -10,8 +10,10 @@ import 'package:labbook/screens/student/booking/booking_form_page.dart';
 import 'package:labbook/screens/student/laboratory_detail_page.dart';
 import 'package:labbook/screens/student/student_home.dart';
 import 'package:labbook/screens/admin/admin_dashboard.dart';
+import 'package:labbook/screens/admin/admin_report_page.dart';
 import 'package:labbook/screens/admin/booking_approval_page.dart';
 import 'package:labbook/screens/admin/laboratory_management_page.dart';
+import 'package:labbook/screens/admin/schedule_block_page.dart';
 import 'package:labbook/screens/admin/walk_in_page.dart';
 
 void main() {
@@ -231,6 +233,40 @@ void main() {
             expect(route, isA<MaterialPageRoute>());
             final widget = (route as MaterialPageRoute).builder(context);
             expect(widget, isA<WalkInPage>());
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+    });
+
+    testWidgets('Generates ScheduleBlockPage for AppRoutes.adminScheduleBlock',
+        (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            final route = AppRouter.onGenerateRoute(
+              const RouteSettings(name: AppRoutes.adminScheduleBlock),
+            );
+            expect(route, isA<MaterialPageRoute>());
+            final widget = (route as MaterialPageRoute).builder(context);
+            expect(widget, isA<ScheduleBlockPage>());
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+    });
+
+    testWidgets('Generates AdminReportPage for AppRoutes.adminReports',
+        (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            final route = AppRouter.onGenerateRoute(
+              const RouteSettings(name: AppRoutes.adminReports),
+            );
+            expect(route, isA<MaterialPageRoute>());
+            final widget = (route as MaterialPageRoute).builder(context);
+            expect(widget, isA<AdminReportPage>());
             return const SizedBox.shrink();
           },
         ),

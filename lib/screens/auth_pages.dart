@@ -274,7 +274,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Daftar mahasiswa')),
+    appBar: AppBar(title: const Text('Daftar Mahasiswa')),
     body: SafeArea(child: PageWidth(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(24, 16, 24, 32), child: Form(key: keyForm, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const Text('Buat akun LabBook', style: TextStyle(fontSize: 23, fontWeight: FontWeight.w700)),
       const SizedBox(height: 7),
